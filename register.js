@@ -35,7 +35,7 @@ form.addEventListener('submit', (e) => {
 
     // check if the name is legal
     const nameRegex = /^[A-Za-z\s]+$/;
-    if(input_name.value.length > 50 || !nameRegex.test(input_name)){
+    if(input_name.value.length > 50 || !nameRegex.test(input_name.value.trim())){
         vaild=false;
         input_name.classList.add("is-invalid");
         nameInvalidFeedback.style.display = "block";

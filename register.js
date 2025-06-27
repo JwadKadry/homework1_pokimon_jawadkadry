@@ -47,7 +47,7 @@ form.addEventListener('submit', (e) => {
     // checks if the password is legal 
     const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[^A-Za-z0-9]).{7,15}$/;
     if (!passwordRegex.test(input_password.value) || input_password.value.length >15 || input_password.value.length < 7){
-        valid = false;
+        vaild = false;
         input_password.classList.add("is-invalid");
         passwordInvalidFeedback.style.display = "block";
     } else{
@@ -76,7 +76,7 @@ form.addEventListener('submit', (e) => {
         emailValidFeedback.style.display = "block";
     }
 
-    if (valid) {
+    if (vaild) {
         alert("Registe done");
         form.reset();
         input_name.classList.remove("is-valid");

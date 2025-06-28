@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Homepage - Pokémon Search Project</title>
+  <link rel="stylesheet" href="homepage.css">
+</head>
+<body>
+
+  <!-- TOP NAV BAR -->
+  <header class="top-nav">
+    <nav>
+      <ul class="nav-links">
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="careers.html">Careers</a></li>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="homepage.html" class="active">Home</a></li>
+      </ul>
+      <span class="brand">Pokemon</span>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- INTRODUCTION SECTION -->
+    <section class="intro">
+      <h2>Welcome!</h2>
+      <p>
+        This Pokémon search project allows you to find a Pokémon by name, number, type, or ability.
+        The data is loaded from a JSON file on the server and displayed dynamically on the homepage.
+      </p>
+      </p>
+    </section>
+
+    <!-- DEVELOPERS LIST -->
+    <section class="developers">
+      <h2>Developers:</h2>
+      <ul id="devList">
+        <!-- JavaScript will insert names & IDs here -->
+      </ul>
+    </section>
+
+  </main>
+
+  <script src="homepage.js"></script>
+</body>
+</html>

@@ -1,20 +1,19 @@
-// Fetch the developers.json from the server and populate the list
+// Fetch developers.json from the server and populate the list
 fetch('developers.json')
-  .then(res => {
-    if (!res.ok) throw new Error('Unable to load developers data');
-    return res.json();
+  .then(response => {
+    if (!response.ok) throw new Error('Unable to load developers data');
+    return response.json();
   })
-  .then(data => {
-    const ul = document.getElementById('devList');
-    data.forEach(dev => {
+  .then(developers => {
+    const devList = document.getElementById('devList');
+    developers.forEach(({ name, id }) => {
       const li = document.createElement('li');
-      // Insert developer name and ID
-      li.textContent = `${dev.name} – ת.ז: ${dev.id}`;
-      ul.appendChild(li);
+      li.textContent = `${name} – ID: ${id}`;
+      devList.appendChild(li);
     });
   })
-  .catch(err => {
-    console.error(err);
-    const ul = document.getElementById('devList');
-    ul.innerHTML = '<li>שגיאה בטעינת רשימת המפתחים</li>';
+  .catch(error => {
+    console.error('Error fetching developers:', error);
+    const devList = document.getElementById('devList');
+    devList.innerHTML = '<li>Error loading developers list</li>';
   });

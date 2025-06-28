@@ -1,0 +1,46 @@
+body {
+  font-family: Arial, sans-serif;
+  direction: rtl;
+  text-align: center;
+  background-color: #f7faff;
+  padding: 20px;
+}
+
+.controls {
+  margin-bottom: 20px;
+}
+
+select, button {
+  padding: 8px;
+  margin: 5px;
+  font-size: 16px;
+}
+
+#favoritesList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.card {
+  border: 1px solid #ccc;
+  background: white;
+  padding: 10px;
+  width: 200px;
+  border-radius: 8px;
+  box-shadow: 1px 1px 6px rgba(0,0,0,0.1);
+}
+
+.card img {
+  width: 100px;
+}
+
+.remove-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}

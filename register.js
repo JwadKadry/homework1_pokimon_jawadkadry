@@ -21,7 +21,7 @@ form.addEventListener('submit', async (e) => {
 
   // --- Name validation ---
   const nameRegex = /^[A-Za-z\s]+$/;
-  if (!nameRegex.test(nameInput.value.trim())) {
+  if (!nameRegex.test(nameInput.value.trim()) || nameInput.value.trim().length > 50) {
     valid = false;
     nameInput.classList.add('is-invalid');
     nameInput.parentElement.querySelector('.invalid-feedback').style.display = 'block';

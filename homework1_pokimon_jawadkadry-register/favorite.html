@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>המועדפים שלי</title>
+  <link rel="stylesheet" href="favorites.css">
+</head>
+<body>
+  <h1>הפוקימונים שלי</h1>
+
+  <div class="controls">
+    <button onclick="goBack()">⬅ חזרה לחיפוש</button>
+
+    <label for="sortSelect">Sort by: </label>
+    <select id="sortSelect" onchange="loadFavorites()">
+      <option value="name">name</option>
+      <option value="id">id</option>
+    </select>
+
+    <button onclick="downloadFavorites()">⬇ הורד JSON</button>
+  </div>
+
+  <div id="favoritesList"></div>
+
+  <script src="favorites.js"></script>
+</body>
+</html>

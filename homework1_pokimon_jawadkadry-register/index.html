@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <title>חיפוש פוקימונים</title>
+  <link rel="stylesheet" href="pokimonstyle.css">
+</head>
+<body>
+
+  <!-- כותרת -->
+  <h1>חיפוש פוקימונים</h1>
+
+  <div class="search-container">
+    <!---<h1>ברוכים הבאים!</h1>--->
+    <div>
+    <button type="button" onclick="window.location.href='register.html'">הירשם עכשיו</button>
+      </div>
+  <form class="search-form" onsubmit="searchPokimon(); return false;">
+
+    
+
+
+    <!-- סוג חיפוש -->
+    <div class="form-group">
+      <label for="search_choice">סוג חיפוש:</label>
+      <select id="search_choice">
+        <option value="name">שם או מספר</option>
+        <option value="type">סוג</option>
+        <option value="ability">יכולת</option>
+      </select>
+    </div>
+
+    <!-- קלט חיפוש -->
+    <div class="form-group">
+      <label for="searchInput">הקלד את שם הפוקימון:</label>
+      <input type="text" id="searchInput" list="suggestions" placeholder="לדוגמה: Bulbasaur">
+      <datalist id="suggestions"></datalist>
+    </div>
+
+    <!-- חיפוש -->
+    <div class="form-group">
+      <label style="visibility: hidden;">לחפש</label>
+      <button type="submit">🔍 חפש פוקימונים</button>
+    </div>
+
+    <!-- מועדפים -->
+    <div class="form-group">
+      <label style="visibility: hidden;">מועדפים</label>
+      <button type="button" onclick="gotothefavorites()">💛 מעבר למועדפים</button>
+    </div>
+
+  </form>
+</div>
+
+<div id="pokemonModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <div id="modalDetails"></div>
+  </div>
+</div>
+
+
+
+
+  <!-- תוצאות -->
+  <h2>תוצאות חיפוש:</h2>
+  <div id="results"></div>
+  <img id="gifloader" src="Hourglass.gif" alt="טוען..." style="width:64px;display:none">
+
+  
+</body>
+<script src="pokimon.js"></script>
+</html>

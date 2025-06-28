@@ -1,17 +1,22 @@
 const express = require('express');
+const path = require('path');   
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const User = require('./models/user');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
-app.use(express.static(__dirname));
+app.use(require('cors')());
+app.use(
+  express.static(__dirname, {
+    index: 'homepage.html'
+  })
+);
 
 // Connect to MongoDB
 mongoose.connect(
@@ -77,6 +82,4 @@ app.post('/login', async (req, res) => {
   });
 });
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));

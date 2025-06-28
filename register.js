@@ -1,90 +1,98 @@
-let form= document.getElementById("registerForm");
-let input_name=document.getElementById("name");
-let input_email=document.getElementById("email");
-let input_password=document.getElementById("password");
-let confirm_pass=document.getElementById("confirm");
+// Grab form and input elements
+const form = document.getElementById('registerForm');
+const nameInput = document.getElementById('name');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const confirmInput = document.getElementById('confirm');
 
-form.addEventListener('submit', (e) => {
-    e.preventDefault();
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-    input_name.classList.remove("is-valid", "is-invalid");
-    input_email.classList.remove("is-valid", "is-invalid");
-    input_password.classList.remove("is-valid", "is-invalid");
-    confirm_pass.classList.remove("is-valid", "is-invalid");
+  // Reset validation states
+  [nameInput, emailInput, passwordInput, confirmInput].forEach(input => {
+    input.classList.remove('is-valid', 'is-invalid');
+    const inv = input.parentElement.querySelector('.invalid-feedback');
+    const val = input.parentElement.querySelector('.valid-feedback');
+    if (inv) inv.style.display = 'none';
+    if (val) val.style.display = 'none';
+  });
 
-    let nameInvalidFeedback = input_name.parentElement.querySelector(".invalid-feedback");
-    let nameValidFeedback = input_name.parentElement.querySelector(".valid-feedback");
-    let emailInvalidFeedback = input_email.parentElement.querySelector(".invalid-feedback");
-    let emailValidFeedback = input_email.parentElement.querySelector(".valid-feedback");
-    let passwordInvalidFeedback = input_password.parentElement.querySelector(".invalid-feedback");
-    let passwordValidFeedback = input_password.parentElement.querySelector(".valid-feedback");
-    let confirmPassInvalidFeedback = confirm_pass.parentElement.querySelector(".invalid-feedback");
-    let confirmPassValidFeedback = confirm_pass.parentElement.querySelector(".valid-feedback");
-    
-    
-    nameInvalidFeedback.style.display = "none";
-    nameValidFeedback.style.display = "none";
-    emailInvalidFeedback.style.display = "none";
-    emailValidFeedback.style.display = "none";
-    passwordInvalidFeedback.style.display = "none";
-    passwordValidFeedback.style.display = "none";
-    confirmPassInvalidFeedback.style.display = "none";
-    confirmPassValidFeedback.style.display = "none";
+  let valid = true;
 
-    let vaild = true ; 
+  // --- Name validation ---
+  const nameRegex = /^[A-Za-z\s]+$/;
+  if (!nameRegex.test(nameInput.value.trim())) {
+    valid = false;
+    nameInput.classList.add('is-invalid');
+    nameInput.parentElement.querySelector('.invalid-feedback').style.display = 'block';
+  } else {
+    nameInput.classList.add('is-valid');
+    nameInput.parentElement.querySelector('.valid-feedback').style.display = 'block';
+  }
 
-    // check if the name is legal
-    const nameRegex = /^[A-Za-z\s]+$/;
-    if(input_name.value.length > 50 || !nameRegex.test(input_name.value.trim())){
-        vaild=false;
-        input_name.classList.add("is-invalid");
-        nameInvalidFeedback.style.display = "block";
-    }else {
-        input_name.classList.add("is-valid");
-        nameValidFeedback.style.display = "block";
-    }
+  // --- Email validation ---
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(emailInput.value.trim())) {
+    valid = false;
+    emailInput.classList.add('is-invalid');
+    emailInput.parentElement.querySelector('.invalid-feedback').style.display = 'block';
+  } else {
+    emailInput.classList.add('is-valid');
+    emailInput.parentElement.querySelector('.valid-feedback').style.display = 'block';
+  }
 
-    // checks if the password is legal 
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[^A-Za-z0-9]).{7,15}$/;
-    if (!passwordRegex.test(input_password.value) || input_password.value.length >15 || input_password.value.length < 7){
-        vaild = false;
-        input_password.classList.add("is-invalid");
-        passwordInvalidFeedback.style.display = "block";
-    } else{
-        input_password.classList.add("is-valid");
-        passwordValidFeedback.style.display = "block";
-    }
+  // --- Password validation ---
+  // 7–15 chars, at least one uppercase, one lowercase and one special
+  const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[^A-Za-z0-9]).{7,15}$/;
+  if (!passwordRegex.test(passwordInput.value)) {
+    valid = false;
+    passwordInput.classList.add('is-invalid');
+    passwordInput.parentElement.querySelector('.invalid-feedback').style.display = 'block';
+  } else {
+    passwordInput.classList.add('is-valid');
+    passwordInput.parentElement.querySelector('.valid-feedback').style.display = 'block';
+  }
 
-    // check if the the confirm pass is the same . 
-    if (confirm_pass.value !== input_password.value){
-        vaild = false ; 
-        confirm_pass.classList.add("is-invalid");
-        confirmPassInvalidFeedback.style.display = "block";
-    } else { 
-        confirm_pass.classList.add("is-valid");
-        confirmPassValidFeedback.style.display = "block";
-    }
+  // --- Confirm password ---
+  if (confirmInput.value !== passwordInput.value) {
+    valid = false;
+    confirmInput.classList.add('is-invalid');
+    confirmInput.parentElement.querySelector('.invalid-feedback').style.display = 'block';
+  } else {
+    confirmInput.classList.add('is-valid');
+    confirmInput.parentElement.querySelector('.valid-feedback').style.display = 'block';
+  }
 
-    //check if the email is legal 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(input_email.value)){
-        vaild = false ; 
-        input_email.classList.add("is-invalid");
-        emailInvalidFeedback.style.display = "block";
+  if (!valid) return;  // stop if any validation failed
+
+  // Prepare payload
+  const payload = {
+    name: nameInput.value.trim(),
+    email: emailInput.value.trim(),
+    password: passwordInput.value
+  };
+
+  // Send to server
+  try {
+    const res = await fetch('/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      alert('Registration successful! Redirecting to login...');
+      window.location.href = 'login.html';
     } else {
-        input_email.classList.add("is-valid");
-        emailValidFeedback.style.display = "block";
+      alert(`Error: ${result.message}`);
     }
 
-    if (vaild) {
-        alert("Registe done");
-        form.reset();
-        input_name.classList.remove("is-valid");
-        input_email.classList.remove("is-valid");
-        input_password.classList.remove("is-valid");
-        confirm_pass.classList.remove("is-valid");
-    }
+    // Reset form & states
+    form.reset();
+    [nameInput, emailInput, passwordInput, confirmInput].forEach(i => i.classList.remove('is-valid'));
+  } catch (err) {
+    console.error('Network error:', err);
+    alert('Network error. Please try again later.');
+  }
 });
-
-
-// not all done still to check with the DB

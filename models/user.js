@@ -1,11 +1,20 @@
+// models/user.js
 const mongoose = require('mongoose');
+
+const pokemonSchema = new mongoose.Schema({
+  id: Number,
+  name: String,
+  sprites: { front_default: String },
+  types: [ { type: { name: String } } ],
+  abilities: [ { ability: { name: String } } ]
+}, { _id: false });
+
 
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
-  password: String
+  password: String,
+  favorites: { type: [pokemonSchema], default: [] }
 });
 
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);

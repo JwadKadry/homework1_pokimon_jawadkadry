@@ -19,7 +19,7 @@ app.use(
 );
 
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://JawadKadry:JwadKadry@pokmondb.z0c4hkx.mongodb.net/registerDB?retryWrites=true&w=majority&appName=PokmonDB')
+mongoose.connect('mongodb+srv://bsharyamin:Basharyamin1@pokmondb.z0c4hkx.mongodb.net/registerDB?retryWrites=true&w=majority&appName=PokmonDB')
   .then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
@@ -79,5 +79,32 @@ app.post('/login', async (req, res) => {
     user: { name: user.name, email: user.email }
   });
 });
+
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = 'your_secret_key';
+
+// 1. Login route
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user || !await bcrypt.compare(password, user.password))
+    return res.status(401).json({ message: 'Invalid credentials' });
+  const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+  res.json({ token, userId: user._id });
+});
+
+// 2. Middleware לשמירה על גישה רק למחוברים
+function authMiddleware(req, res, next) {
+  const auth = req.headers.authorization?.split(' ')[1];
+  if (!auth) return res.status(401).json({ message: 'Missing token' });
+  try {
+    const payload = jwt.verify(auth, JWT_SECRET);
+    req.userId = payload.userId;
+    next();
+  } catch {
+    res.status(401).json({ message: 'Invalid token' });
+  }
+}
+
 // Start server
 app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));

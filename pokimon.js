@@ -198,13 +198,22 @@ function displayPokemon(pokemon) {
 
 // מוסיף פוקימון לרשימת מועדפים
 function addToFavorites(pokemon) {
-  let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-  if (!favorites.find(p => p.id === pokemon.id)) {
-    favorites.push(cleanPokemonData(pokemon));
-    localStorage.setItem("favorites", JSON.stringify(favorites));
+  const token = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
+  fetch(`/users/${userId}/favorites`, {
+    method: 'POST',
+    headers: {
+      'Content-Type':'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(pokemon)
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('failed');
     alert(`${pokemon.name} נוסף למועדפים!`);
-  }
+  });
 }
+
 
 // טוען את החיפוש האחרון מה־localStorage ומציג את התוצאות
 function loadLastSearch() {
@@ -224,8 +233,10 @@ function loadLastSearch() {
 
 // מעבר לעמוד המועדפים
 function gotothefavorites() {
-  const user = sessionStorage.getItem("user");
-  if (!user) {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
+  if (!token || !userId) {
     alert("כדי לצפות במועדפים עליך להתחבר");
     window.location.href = "login.html";
     return;
@@ -233,6 +244,7 @@ function gotothefavorites() {
 
   window.location.href = "favorite.html";
 }
+
 
 
 function showDetails(pokemon) {

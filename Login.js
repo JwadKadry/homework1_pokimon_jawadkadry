@@ -17,7 +17,7 @@ form.addEventListener('submit', async (e) => {
 
   let valid = true;
 
-  // Password: 7–15 chars, 1 uppercase, 1 lowercase, 1 special
+  // Password validation
   const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[^A-Za-z0-9]).{7,15}$/;
   if (!passwordRegex.test(passwordInput.value)) {
     valid = false;
@@ -28,7 +28,7 @@ form.addEventListener('submit', async (e) => {
     passwordInput.parentElement.querySelector('.valid-feedback').style.display = 'block';
   }
 
-  // Email format
+  // Email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(emailInput.value.trim())) {
     valid = false;
@@ -39,34 +39,33 @@ form.addEventListener('submit', async (e) => {
     emailInput.parentElement.querySelector('.valid-feedback').style.display = 'block';
   }
 
-  if (!valid) return;  // stop if client-side validation failed
+  if (!valid) return;
 
-  // Prepare payload
   const payload = {
     email: emailInput.value.trim(),
     password: passwordInput.value
   };
 
   try {
-    // Send login request
     const res = await fetch('http://localhost:3000/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload)
-});
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-const result = await res.json();
+    const result = await res.json();
 
-    if (!result.success) {
-      // login failed on the server
-      alert(result.message || 'Invalid email or password');
+    if (!res.ok || !result.token) {
+      alert(result.message || 'Login failed');
       return;
     }
 
-    // login succeeded → save user in sessionStorage
-    sessionStorage.setItem('user', JSON.stringify(result.user));
+    // Save token and user info
+    localStorage.setItem('token', result.token);
+    localStorage.setItem('userId', result.user._id);
+    localStorage.setItem('user', JSON.stringify(result.user));
 
-    // redirect to search page
+    // Redirect
     window.location.href = 'index.html';
 
   } catch (err) {

@@ -64,7 +64,9 @@ const result = await res.json();
     }
 
     // login succeeded → save user in sessionStorage
-    sessionStorage.setItem('user', JSON.stringify(result.user));
+    localStorage.setItem('token', result.token);         // אם יש
+    localStorage.setItem('userId', result.user.id);
+    localStorage.setItem('user', JSON.stringify(result.user));
 
     // redirect to search page
     window.location.href = 'index.html';

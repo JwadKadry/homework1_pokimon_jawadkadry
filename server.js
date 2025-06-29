@@ -75,9 +75,54 @@ app.post('/login', async (req, res) => {
 
   // send back only needed fields
   res.json({
-    success: true,
-    user: { name: user.name, email: user.email }
-  });
+  success: true,
+  user: { id: user._id, name: user.name, email: user.email }
+});
+
 });
 // Start server
 app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
+
+// קבלת מועדפים לפי מזהה משתמש
+app.get('/users/:userId/favorites', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json(user.favorites || []);
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// הוספת פוקימון למועדפים
+app.post('/users/:userId/favorites', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const exists = user.favorites.find(p => p.id === req.body.id);
+    if (!exists) {
+      user.favorites.push(req.body);
+      await user.save();
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// הסרת פוקימון מהמועדפים
+app.delete('/users/:userId/favorites/:pokeId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    user.favorites = user.favorites.filter(p => p.id !== parseInt(req.params.pokeId));
+    await user.save();
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});

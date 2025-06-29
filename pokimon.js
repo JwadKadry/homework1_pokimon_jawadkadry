@@ -5,38 +5,51 @@ let cachedOptions = JSON.parse(localStorage.getItem("pokeSuggestions")) || {
   ability: []
 };
 
-// ברגע שהעמוד נטען:
+// בעת טעינת העמוד
 document.addEventListener("DOMContentLoaded", () => {
-  // טען חיפוש אחרון אם קיים
   loadLastSearch();
-
-  // טען הצעות מחדש כאשר המשתמש מחליף שיטת חיפוש (שם / סוג / יכולת)
   document.getElementById("search_choice").addEventListener("change", loadSuggestions);
+
+  const userData = localStorage.getItem("user");
+  const headerArea = document.createElement("div");
+  headerArea.style.position = "fixed";
+  headerArea.style.top = "10px";
+  headerArea.style.left = "10px";
+  headerArea.style.zIndex = "999";
+
+  if (userData) {
+    const logoutBtn = document.createElement("button");
+    logoutBtn.textContent = "🔓 התנתק";
+    logoutBtn.onclick = logout;
+    headerArea.appendChild(logoutBtn);
+  } else {
+    const homeBtn = document.createElement("button");
+    homeBtn.textContent = "🏠 חזור לדף הבית";
+    homeBtn.onclick = () => window.location.href = "homepage.html";
+    headerArea.appendChild(homeBtn);
+  }
+
+  document.body.appendChild(headerArea);
 });
 
-// טוען הצעות להשלמה אוטומטית לשדה החיפוש
+// טוען הצעות autocomplete לפי שיטת החיפוש
 function loadSuggestions() {
   return new Promise((resolve) => {
     const searchChoice = document.getElementById("search_choice").value;
     const input = document.getElementById("searchInput");
     const datalist = document.getElementById("suggestions");
 
-    // אפס את שדה החיפוש כאשר משנים סוג חיפוש
     input.value = "";
-
-    // אם כבר יש הצעות בזיכרון – טען משם
     if (cachedOptions[searchChoice]?.length > 0) {
       updateDatalist(cachedOptions[searchChoice]);
       resolve();
       return;
     }
 
-    // URL בהתאם לשיטת החיפוש
     const url = searchChoice === "name"
       ? "https://pokeapi.co/api/v2/pokemon?limit=10000"
       : `https://pokeapi.co/api/v2/${searchChoice}`;
 
-    // שלח בקשה ל־API
     fetch(url)
       .then(res => res.json())
       .then(data => {
@@ -48,35 +61,28 @@ function loadSuggestions() {
       })
       .catch(err => {
         console.error("שגיאה בטעינת הצעות:", err);
-        resolve(); // גם במקרה של שגיאה נמשיך
+        resolve();
       });
   });
 }
 
-// מעדכן את datalist עם ההצעות שקיבלנו
 function updateDatalist(list) {
   const datalist = document.getElementById("suggestions");
   datalist.innerHTML = list.map(name => `<option value="${name}">`).join("");
 }
 
-// מבצע חיפוש לפי שם/מספר/סוג/יכולת
 function searchPokimon() {
   const searchChoice = document.getElementById("search_choice").value;
   const value = document.getElementById("searchInput").value.trim().toLowerCase();
   const resultsDiv = document.getElementById("results");
 
-  // הצגת אנימציית טוען
   resultsDiv.innerHTML = `<img src="Hourglass.gif" alt="טוען..." style="width:64px;height:64px;">`;
-
-  // שמירת חיפוש אחרון
   localStorage.setItem("lastSearch", JSON.stringify({ searchChoice, value }));
 
-  let lastResults = []; // שמירה לתוצאות
+  let lastResults = [];
 
-  // חיפוש לפי שם או מספר
   if (searchChoice === "name") {
     if (!isNaN(value)) {
-      // אם המשתמש הקליד מספר פוקימון
       fetch(`https://pokeapi.co/api/v2/pokemon/${value}`)
         .then(res => {
           if (!res.ok) throw new Error("לא נמצא פוקימון עם מספר זה");
@@ -85,7 +91,6 @@ function searchPokimon() {
         .then(poke => {
           resultsDiv.innerHTML = "";
           displayPokemon(poke);
-          // שמירה
           lastResults.push(cleanPokemonData(poke));
           localStorage.setItem("lastSearchResults", JSON.stringify(lastResults));
         })
@@ -95,11 +100,9 @@ function searchPokimon() {
       return;
     }
 
-    // חיפוש לפי חלק משם
     fetch("https://pokeapi.co/api/v2/pokemon?limit=10000")
       .then(res => res.json())
       .then(data => {
-        //
         const matches = data.results.filter(p => p.name.includes(value)).slice(0, 20);
         if (matches.length === 0) throw new Error("לא נמצאו פוקימונים");
         resultsDiv.innerHTML = "";
@@ -118,10 +121,7 @@ function searchPokimon() {
       .catch(err => {
         resultsDiv.innerHTML = `<p style="color:red;">${err.message}</p>`;
       });
-  }
-
-  // חיפוש לפי סוג או יכולת
-  else if (searchChoice === "type" || searchChoice === "ability") {
+  } else if (searchChoice === "type" || searchChoice === "ability") {
     fetch(`https://pokeapi.co/api/v2/${searchChoice}`)
       .then(res => res.json())
       .then(data => {
@@ -132,7 +132,6 @@ function searchPokimon() {
         if (matches.length === 0) throw new Error("לא נמצאו תוצאות");
 
         resultsDiv.innerHTML = "";
-
         let fetches = [];
 
         matches.forEach(match => {
@@ -165,7 +164,6 @@ function searchPokimon() {
   }
 }
 
-// מנקה אובייקט פוקימון לפני שמירה ב־localStorage
 function cleanPokemonData(poke) {
   return {
     id: poke.id,
@@ -176,7 +174,6 @@ function cleanPokemonData(poke) {
   };
 }
 
-// מציג כרטיס של פוקימון על המסך
 function displayPokemon(pokemon) {
   const container = document.getElementById("results");
   const card = document.createElement("div");
@@ -187,26 +184,43 @@ function displayPokemon(pokemon) {
     <p><strong>Type: </strong> ${pokemon.types.map(t => t.type.name).join(", ")}</p>
     <p><strong>Ability: </strong> ${pokemon.abilities.map(a => a.ability.name).join(", ")}</p>
     <div class="button-group">
-    <button class="favorite" onclick='addToFavorites(${JSON.stringify(pokemon)})'>💛 הוסף למועדפים</button>
-    <button onclick='showDetails(${JSON.stringify(pokemon)})'>פרטים נוספים</button>
+      <button class="favorite" onclick='addToFavorites(${JSON.stringify(pokemon)})'>💛 הוסף למועדפים</button>
+      <button onclick='showDetails(${JSON.stringify(pokemon)})'>פרטים נוספים</button>
     </div>
-
   `;
   container.appendChild(card);
-  
 }
 
-// מוסיף פוקימון לרשימת מועדפים
 function addToFavorites(pokemon) {
-  let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-  if (!favorites.find(p => p.id === pokemon.id)) {
-    favorites.push(cleanPokemonData(pokemon));
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-    alert(`${pokemon.name} נוסף למועדפים!`);
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
+  if (!token || !userId) {
+    alert("עליך להתחבר כדי להוסיף מועדפים");
+    window.location.href = "login.html";
+    return;
   }
+
+  const clean = cleanPokemonData(pokemon);
+
+  fetch(`http://localhost:3000/users/${userId}/favorites`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(clean)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("שגיאה בהוספת מועדף");
+      alert(`${pokemon.name} נוסף למועדפים!`);
+    })
+    .catch(err => {
+      console.error("שגיאה:", err);
+      alert("לא ניתן להוסיף למועדפים");
+    });
 }
 
-// טוען את החיפוש האחרון מה־localStorage ומציג את התוצאות
 function loadLastSearch() {
   const last = JSON.parse(localStorage.getItem("lastSearch"));
   const results = JSON.parse(localStorage.getItem("lastSearchResults"));
@@ -222,10 +236,11 @@ function loadLastSearch() {
   }
 }
 
-// מעבר לעמוד המועדפים
 function gotothefavorites() {
-  const user = sessionStorage.getItem("user");
-  if (!user) {
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
+  if (!token || !userId) {
     alert("כדי לצפות במועדפים עליך להתחבר");
     window.location.href = "login.html";
     return;
@@ -233,7 +248,6 @@ function gotothefavorites() {
 
   window.location.href = "favorite.html";
 }
-
 
 function showDetails(pokemon) {
   const modal = document.getElementById("pokemonModal");
@@ -268,29 +282,8 @@ function closeModal() {
 }
 
 function logout() {
-  sessionStorage.removeItem("user");
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+  localStorage.removeItem("userId");
   window.location.href = "homepage.html";
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  const userData = sessionStorage.getItem("user");
-  const headerArea = document.createElement("div");
-  headerArea.style.position = "fixed";
-  headerArea.style.top = "10px";
-  headerArea.style.left = "10px";
-  headerArea.style.zIndex = "999";
-
-  if (userData) {
-    const logoutBtn = document.createElement("button");
-    logoutBtn.textContent = "🔓 התנתק";
-    logoutBtn.onclick = logout;
-    headerArea.appendChild(logoutBtn);
-  } else {
-    const homeBtn = document.createElement("button");
-    homeBtn.textContent = "🏠 חזור לדף הבית";
-    homeBtn.onclick = () => window.location.href = "homepage.html";
-    headerArea.appendChild(homeBtn);
-  }
-
-  document.body.appendChild(headerArea);
-});

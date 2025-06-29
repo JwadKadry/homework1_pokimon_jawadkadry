@@ -19,12 +19,10 @@ app.use(
 );
 
 // Connect to MongoDB
-mongoose.connect(
-  'mongodb+srv://bsharyamin:Basharyamin1@pokmondb.z0c4hkx.mongodb.net/registerDB?retryWrites=true&w=majority&appName=PokmonDB',
-  { useNewUrlParser: true, useUnifiedTopology: true }
-)
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
+mongoose.connect('mongodb+srv://JawadKadry:JwadKadry@pokmondb.z0c4hkx.mongodb.net/registerDB?retryWrites=true&w=majority&appName=PokmonDB')
+  .then(() => console.log('✅ Connected to MongoDB Atlas'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
+
 
 // Registration route
 app.post('/register', async (req, res) => {

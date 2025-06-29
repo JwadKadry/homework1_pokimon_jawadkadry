@@ -224,8 +224,16 @@ function loadLastSearch() {
 
 // מעבר לעמוד המועדפים
 function gotothefavorites() {
+  const user = sessionStorage.getItem("user");
+  if (!user) {
+    alert("כדי לצפות במועדפים עליך להתחבר");
+    window.location.href = "login.html";
+    return;
+  }
+
   window.location.href = "favorite.html";
 }
+
 
 function showDetails(pokemon) {
   const modal = document.getElementById("pokemonModal");
@@ -259,3 +267,30 @@ function closeModal() {
   document.getElementById("pokemonModal").style.display = "none";
 }
 
+function logout() {
+  sessionStorage.removeItem("user");
+  window.location.href = "homepage.html";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const userData = sessionStorage.getItem("user");
+  const headerArea = document.createElement("div");
+  headerArea.style.position = "fixed";
+  headerArea.style.top = "10px";
+  headerArea.style.left = "10px";
+  headerArea.style.zIndex = "999";
+
+  if (userData) {
+    const logoutBtn = document.createElement("button");
+    logoutBtn.textContent = "🔓 התנתק";
+    logoutBtn.onclick = logout;
+    headerArea.appendChild(logoutBtn);
+  } else {
+    const homeBtn = document.createElement("button");
+    homeBtn.textContent = "🏠 חזור לדף הבית";
+    homeBtn.onclick = () => window.location.href = "homepage.html";
+    headerArea.appendChild(homeBtn);
+  }
+
+  document.body.appendChild(headerArea);
+});

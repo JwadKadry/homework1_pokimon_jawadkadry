@@ -49,12 +49,13 @@ form.addEventListener('submit', async (e) => {
 
   try {
     // Send login request
-    const res = await fetch('/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const result = await res.json();
+    const res = await fetch('http://localhost:3000/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload)
+});
+
+const result = await res.json();
 
     if (!result.success) {
       // login failed on the server

@@ -1,12 +1,31 @@
 // ברגע שהעמוד נטען, טען את רשימת המועדפים והצג אותם
 document.addEventListener("DOMContentLoaded", () => {
+  const user = sessionStorage.getItem("user");
+  if (!user) {
+    alert("כדי לגשת למועדפים עליך להתחבר");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // הצגת שם המשתמש
+  const userData = JSON.parse(user);
+ 
+
+  // טען מועדפים רק אם המשתמש קיים
   loadFavorites();
 });
+
+
+
+
+
 
 // טוען את רשימת הפוקימונים המועדפים מה-localStorage ומציג אותם לפי סדר שנבחר
 function loadFavorites() {
   const sortBy = document.getElementById("sortSelect").value; // לפי מה למיין (שם / מספר)
-  const favorites = JSON.parse(localStorage.getItem("favorites") || "[]"); // טען את רשימת המועדפים
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const key = `favorites_${user.id}`;
+  const favorites = JSON.parse(localStorage.getItem(key) || "[]");
 
   // מיון הפוקימונים לפי שם או מספר מזהה
   if (sortBy === "name") {
@@ -41,9 +60,12 @@ function loadFavorites() {
 
 // מסיר פוקימון מהרשימה לפי מזהה (id)
 function removeFromFavorites(id) {
-  let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-  favorites = favorites.filter(p => p.id !== id); // מסנן את הפוקימון שרוצים להסיר
-  localStorage.setItem("favorites", JSON.stringify(favorites)); // שמור מחדש
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const key = `favorites_${user.id}`;
+  let favorites = JSON.parse(localStorage.getItem(key) || "[]");
+  favorites = favorites.filter(p => p.id !== id);
+  localStorage.setItem(key, JSON.stringify(favorites));
+
   loadFavorites(); // רענן את התצוגה
 }
 
@@ -54,7 +76,10 @@ function goBack() {
 
 // יוצר קובץ JSON להורדה עם רשימת המועדפים
 function downloadFavorites() {
-  const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const key = `favorites_${user.id}`;
+  const favorites = JSON.parse(localStorage.getItem(key) || "[]");
+
   const blob = new Blob([JSON.stringify(favorites, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
 
@@ -66,4 +91,9 @@ function downloadFavorites() {
   a.click(); // הפעל הורדה
   document.body.removeChild(a); // מחק את הקישור
   URL.revokeObjectURL(url); // שחרר את המשאב מהזיכרון
+}
+
+function logout() {
+  sessionStorage.removeItem("user");
+  window.location.href = "homepage.html";
 }

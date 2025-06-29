@@ -2,14 +2,19 @@
 <html lang="he">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>המועדפים שלי</title>
   <link rel="stylesheet" href="favorites.css">
 </head>
 <body>
   <h1>הפוקימונים שלי</h1>
 
+
   <div class="controls">
     <button onclick="goBack()">⬅ חזרה לחיפוש</button>
+    <button onclick="logout()">🔓 התנתק</button>
+
 
     <label for="sortSelect">Sort by: </label>
     <select id="sortSelect" onchange="loadFavorites()">

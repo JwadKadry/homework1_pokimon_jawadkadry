@@ -22,12 +22,13 @@ function getAuthHeaders() {
 function loadFavorites() {
   const sortBy = document.getElementById("sortSelect").value;
   const user = JSON.parse(sessionStorage.getItem("user"));
+  if (!user || !user.id) return;
   const key = `favorites_${user.id}`;
 
   fetch(`http://localhost:3000/users/${user.id}/favorites`)
     .then(res => res.json())
     .then(favorites => {
-      localStorage.setItem(key, JSON.stringify(favorites)); // אופציונלי
+      localStorage.setItem(key, JSON.stringify(favorites));
       if (sortBy === "name") {
         favorites.sort((a, b) => a.name.localeCompare(b.name));
       } else if (sortBy === "id") {
@@ -40,6 +41,8 @@ function loadFavorites() {
     });
 }
 
+
+
 // מציג את רשימת הפוקימונים על המסך
 function displayFavorites(favorites) {
   const container = document.getElementById("favoritesList");
@@ -51,19 +54,39 @@ function displayFavorites(favorites) {
   }
 
   favorites.forEach(poke => {
+    const imageUrl = poke.sprites?.front_default || "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png";
+
+    const types = Array.isArray(poke.types)
+      ? poke.types
+          .filter(t => t && t.type && t.type.name)
+          .map(t => t.type.name)
+          .join(", ")
+      : "לא ידוע";
+
+    const abilities = Array.isArray(poke.abilities)
+      ? poke.abilities
+          .filter(a => a && a.ability && a.ability.name)
+          .map(a => a.ability.name)
+          .join(", ")
+      : "לא ידוע";
+
     const card = document.createElement("div");
     card.className = "card";
     card.id = `card-${poke.id}`;
+
     card.innerHTML = `
-      <h3>${poke.name} (#${poke.id})</h3>
-      <img src="${poke.sprites.front_default}" alt="${poke.name}">
-      <p><strong>סוגים:</strong> ${poke.types.map(t => t.type.name).join(", ")}</p>
-      <p><strong>יכולות:</strong> ${poke.abilities.map(a => a.ability.name).join(", ")}</p>
+      <h3>${poke.name || "ללא שם"} (#${poke.id || "?"})</h3>
+      <img src="${imageUrl}" alt="${poke.name}" />
+      <p><strong>סוגים:</strong> ${types}</p>
+      <p><strong>יכולות:</strong> ${abilities}</p>
       <button class="remove-btn" onclick="removeFromFavorites(${poke.id})">הסר</button>
     `;
+
     container.appendChild(card);
   });
 }
+
+
 
 // הסרת פוקימון מהמועדפים
 function removeFromFavorites(pokemonId) {

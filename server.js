@@ -50,23 +50,24 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password)
+  if (!email || !password) {
     return res.status(400).json({ success: false, message: 'Email and password required' });
-
+  }
   try {
-    const user = await User.findOne({ email: email.trim() });
-    if (!user)
-      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    const user = await User.findOne({ email: email.trim().toLowerCase() });
 
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
     const match = await bcrypt.compare(password, user.password);
-    if (!match)
+    if (!match) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
-
+    }
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
     res.json({
       success: true,
-      token, // ✅ מוודא שזה נשלח
+      token,
       user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (err) {
@@ -90,6 +91,22 @@ function authMiddleware(req, res, next) {
 }
 
 // --- ⭐ Favorites Routes ---
+// --- 📥 קבלת מועדפים (חובה כדי שהדף favorite.html יעבוד) ---
+app.get('/users/:userId/favorites', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user)
+      return res.status(404).json({ success: false, message: 'User not found' });
+
+    res.json(user.favorites || []);
+  } catch (err) {
+    console.error('Error fetching favorites:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
+// --- 📤 הורדת מועדפים כ-CSV ---
 app.get('/users/:userId/favorites/download', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -99,13 +116,22 @@ app.get('/users/:userId/favorites/download', async (req, res) => {
 
     const favorites = user.favorites;
 
-    // הפקת CSV
     const header = ['id', 'name', 'types', 'abilities'];
     const rows = favorites.map(p => [
       p.id,
       p.name,
-      p.types.map(t => t.type.name).join(" | "),
-      p.abilities.map(a => a.ability.name).join(" | ")
+      Array.isArray(p.types)
+        ? p.types
+            .filter(t => t && t.type && t.type.name)
+            .map(t => t.type.name)
+            .join(" | ")
+        : "לא ידוע",
+      Array.isArray(p.abilities)
+        ? p.abilities
+            .filter(a => a && a.ability && a.ability.name)
+            .map(a => a.ability.name)
+            .join(" | ")
+        : "לא ידוע"
     ]);
 
     const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -119,10 +145,14 @@ app.get('/users/:userId/favorites/download', async (req, res) => {
   }
 });
 
+
+
+// --- ➕ הוספת פוקימון למועדפים ---
 app.post('/users/:userId/favorites', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user)
+      return res.status(404).json({ success: false, message: 'User not found' });
 
     const exists = user.favorites.find(p => p.id === req.body.id);
     if (!exists) {
@@ -132,23 +162,29 @@ app.post('/users/:userId/favorites', async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
+    console.error('Error adding to favorites:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
+
+// --- ❌ הסרת פוקימון מהמועדפים ---
 app.delete('/users/:userId/favorites/:pokeId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    if (!user)
+      return res.status(404).json({ success: false, message: 'User not found' });
 
     user.favorites = user.favorites.filter(p => p.id !== parseInt(req.params.pokeId));
     await user.save();
 
     res.json({ success: true });
   } catch (err) {
+    console.error('Error removing from favorites:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 // Start server
 app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));

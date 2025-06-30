@@ -1,21 +1,55 @@
+/* בסיס כללי */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   direction: rtl;
   text-align: center;
-  background-color: #f7faff;
+  background-color: #eef6fc;
   padding: 20px;
+  margin: 0;
 }
 
-.controls {
+/* כותרת ראשית */
+h1 {
+  color: #2c3e50;
   margin-bottom: 20px;
 }
 
-select, button {
-  padding: 8px;
-  margin: 5px;
-  font-size: 16px;
+/* אזור הכפתורים והשליטה */
+.controls {
+  margin-bottom: 30px;
 }
 
+select,
+button {
+  padding: 10px 16px;
+  margin: 5px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* כפתורי פעולה */
+button:hover {
+  background-color: #dbefff;
+}
+
+.remove-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  margin-top: 10px;
+  border-radius: 6px;
+}
+
+.remove-btn:hover {
+  background-color: #c0392b;
+}
+
+/* רשימת קלפים */
 #favoritesList {
   display: flex;
   flex-wrap: wrap;
@@ -23,24 +57,34 @@ select, button {
   gap: 20px;
 }
 
+/* כרטיס פוקימון */
 .card {
-  border: 1px solid #ccc;
-  background: white;
-  padding: 10px;
-  width: 200px;
-  border-radius: 8px;
-  box-shadow: 1px 1px 6px rgba(0,0,0,0.1);
+  border: 1px solid #dcdcdc;
+  background: #ffffff;
+  padding: 15px;
+  width: 220px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card h3 {
+  margin: 10px 0 5px;
+  color: #34495e;
 }
 
 .card img {
-  width: 100px;
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
 }
 
-.remove-btn {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  margin-top: 10px;
-  cursor: pointer;
+.card p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #555;
 }

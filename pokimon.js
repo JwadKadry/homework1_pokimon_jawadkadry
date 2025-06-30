@@ -196,23 +196,57 @@ function displayPokemon(pokemon) {
   
 }
 
-// מוסיף פוקימון לרשימת מועדפים
 function addToFavorites(pokemon) {
-  const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId');
-  fetch(`/users/${userId}/favorites`, {
-    method: 'POST',
-    headers: {
-      'Content-Type':'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify(pokemon)
-  })
-  .then(res => {
-    if (!res.ok) throw new Error('failed');
-    alert(`${pokemon.name} נוסף למועדפים!`);
-  });
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  const token = sessionStorage.getItem("token");
+
+  if (!user || !token) {
+    alert("כדי להוסיף למועדפים עליך להתחבר");
+    window.location.href = "login.html";
+    return;
+  }
+
+  const key = `favorites_${user.id}`;
+  let favorites = JSON.parse(localStorage.getItem(key) || "[]");
+
+  if (!favorites.find(p => p.id === pokemon.id)) {
+    // הוסף ל-localStorage
+    favorites.push({
+      id: pokemon.id,
+      name: pokemon.name,
+      sprites: pokemon.sprites,
+      types: pokemon.types,
+      abilities: pokemon.abilities
+    });
+    localStorage.setItem(key, JSON.stringify(favorites));
+
+    // שלח לשרת
+    fetch(`http://localhost:3000/users/${user.id}/favorites`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: pokemon.id,
+        name: pokemon.name,
+        sprites: pokemon.sprites,
+        types: pokemon.types,
+        abilities: pokemon.abilities
+      }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(`${pokemon.name} נוסף למועדפים!`);
+        } else {
+          console.error("שגיאה:", data.message);
+        }
+      })
+      .catch(err => console.error("שגיאה בשרת:", err));    
+  }
 }
+
+
 
 
 // טוען את החיפוש האחרון מה־localStorage ומציג את התוצאות
@@ -231,18 +265,17 @@ function loadLastSearch() {
   }
 }
 
-// מעבר לעמוד המועדפים
-function gotothefavorites() {
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
+function goToFavorites() {
+  const user = sessionStorage.getItem("user");
+  const token = sessionStorage.getItem("token");
 
-  if (!token || !userId) {
+  if (!user || !token) {
     alert("כדי לצפות במועדפים עליך להתחבר");
     window.location.href = "login.html";
     return;
   }
 
-  window.location.href = "favorite.html";
+  window.location.href = "favorite.html"; // או favorites.html לפי השם שלך
 }
 
 
@@ -281,6 +314,7 @@ function closeModal() {
 
 function logout() {
   sessionStorage.removeItem("user");
+  sessionStorage.removeItem("token");
   window.location.href = "homepage.html";
 }
 

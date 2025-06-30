@@ -1,26 +1,23 @@
+<!-- FAVORITE.HTML -->
 <!DOCTYPE html>
-<html lang="he">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>המועדפים שלי</title>
+  <title>My Favorites</title>
   <link rel="stylesheet" href="favorites.css">
 </head>
 <body>
-  <h1>הפוקימונים שלי</h1>
+  <h1>My Favorite Pokémon</h1>
 
   <div class="controls">
-    <button onclick="goBack()">⬅ חזרה לחיפוש</button>
-    <button onclick="logout()">🔓 התנתק</button>
+    <button onclick="goBack()">⬅ Back to Search</button>
 
-    <label for="sortSelect">מיין לפי:</label>
+    <label for="sortSelect">Sort by:</label>
     <select id="sortSelect" onchange="loadFavorites()">
-      <option value="name">שם</option>
-      <option value="id">מספר</option>
+      <option value="name">Name</option>
+      <option value="id">ID</option>
     </select>
-
-    <button onclick="downloadFavoritesJSON()">⬇ הורד JSON</button>
-    <button onclick="downloadFavoritesCSV()">⬇ הורד CSV</button>
   </div>
 
   <div id="favoritesList"></div>

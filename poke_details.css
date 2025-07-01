@@ -91,3 +91,26 @@ body {
     border: none;
   }
   
+  #youtube-results iframe {
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+button.action-btn {
+  background-color: #2b3e50;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  margin: 10px;
+  font-size: 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+button.action-btn:hover {
+  background-color: #3c5d75;
+}

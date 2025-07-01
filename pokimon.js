@@ -281,12 +281,23 @@ document.addEventListener("DOMContentLoaded", () => {
   headerArea.style.top = "10px";
   headerArea.style.left = "10px";
   headerArea.style.zIndex = "999";
+  headerArea.style.gap = "10px"; // מרווח בין הכפתורים
 
   if (userData) {
+     const arenaBtn = document.createElement("button");
+    arenaBtn.textContent = "🎮 זירת הקרבות";
+    arenaBtn.onclick = () => window.location.href = "arena.html";
+    arenaBtn.classList.add("arena-button");
+    headerArea.appendChild(arenaBtn);
+
     const logoutBtn = document.createElement("button");
     logoutBtn.textContent = "🔓 Logout";
     logoutBtn.onclick = logout;
     headerArea.appendChild(logoutBtn);
+
+    
+
+
   } else {
     const homeBtn = document.createElement("button");
     homeBtn.textContent = "🏠 Back to Homepage";
@@ -296,3 +307,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.body.appendChild(headerArea);
 });
+
+
+

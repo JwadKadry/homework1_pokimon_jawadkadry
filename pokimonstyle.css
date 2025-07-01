@@ -136,3 +136,29 @@ button.favorite {
   margin-bottom: 20px;
 }
 
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* ריווח בין כפתורים */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-links li {
+  display: inline-block;
+}
+
+.nav-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.nav-btn:hover {
+  background-color: #0056b3;
+}

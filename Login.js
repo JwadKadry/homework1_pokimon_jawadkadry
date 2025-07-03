@@ -75,3 +75,6 @@ form.addEventListener('submit', async (e) => {
     alert('Network error. Please try again later.');
   }
 });
+
+const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+

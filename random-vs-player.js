@@ -1,60 +1,74 @@
-function getRandomId() {
-  return Math.floor(Math.random() * 151) + 1; // פוקימונים ראשונים
-}
-
-async function getPokemonData(id) {
-  const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-  const data = await response.json();
-  return {
-    name: data.name,
-    img: data.sprites.front_default,
-    stats: {
-      hp: data.stats.find(s => s.stat.name === 'hp').base_stat,
-      attack: data.stats.find(s => s.stat.name === 'attack').base_stat,
-      defense: data.stats.find(s => s.stat.name === 'defense').base_stat,
-      speed: data.stats.find(s => s.stat.name === 'speed').base_stat
-    }
-  };
-}
-
-function calculateScore(stats) {
-  return (
-    stats.hp * 0.3 +
-    stats.attack * 0.4 +
-    stats.defense * 0.2 +
-    stats.speed * 0.1
-  );
-}
-
-function displayPokemon(containerId, pokemon, score) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = `
-    <h3>${pokemon.name}</h3>
-    <img src="${pokemon.img}" alt="${pokemon.name}" />
-    <p>HP: ${pokemon.stats.hp}</p>
-    <p>Attack: ${pokemon.stats.attack}</p>
-    <p>Defense: ${pokemon.stats.defense}</p>
-    <p>Speed: ${pokemon.stats.speed}</p>
-    <p><strong>Score: ${score.toFixed(2)}</strong></p>
-  `;
-}
-
-document.getElementById('battle-btn').addEventListener('click', async () => {
-  const p1 = await getPokemonData(getRandomId());
-  const p2 = await getPokemonData(getRandomId());
-
-  const score1 = calculateScore(p1.stats);
-  const score2 = calculateScore(p2.stats);
-
-  displayPokemon('player1', p1, score1);
-  displayPokemon('player2', p2, score2);
-
-  const result = document.getElementById('result');
-  if (score1 > score2) {
-    result.textContent = `${p1.name} ניצח!`;
-  } else if (score2 > score1) {
-    result.textContent = `${p2.name} ניצח!`;
-  } else {
-    result.textContent = "תיקו!";
+document.addEventListener("DOMContentLoaded", () => {
+  const user = JSON.parse(sessionStorage.getItem("user"));
+  if (!user || !user.id) {
+    alert("עליך להיות מחובר כדי לשחק.");
+    window.location.href = "login.html";
+    return;
   }
+
+  document.getElementById("findPlayerBtn").addEventListener("click", () => startBattle(user));
 });
+
+function startBattle(user) {
+  fetch(`http://localhost:3000/users/random-opponent/${user.id}`)
+    .then(res => res.json())
+    .then(opponent => {
+      const myPokemon = pickRandomPokemonFromLocal(user.id);
+      const opponentPokemon = pickRandomPokemonFromOpponent(opponent.favorites);
+      displayBattle(user.name, myPokemon, opponent.name, opponentPokemon);
+    })
+    .catch(err => {
+      console.error("❌ שגיאה באיתור יריב:", err);
+      alert("לא נמצא יריב מתאים כרגע.");
+    });
+}
+
+function pickRandomPokemonFromLocal(userId) {
+  const favorites = JSON.parse(localStorage.getItem(`favorites_${userId}`)) || [];
+  return favorites.length ? favorites[Math.floor(Math.random() * favorites.length)] : null;
+}
+
+function pickRandomPokemonFromOpponent(favs) {
+  return favs.length ? favs[Math.floor(Math.random() * favs.length)] : null;
+}
+
+function calculateScore(pokemon) {
+  return (pokemon.stats || []).reduce((sum, stat) => sum + stat.base_stat, 0);
+}
+
+function displayBattle(player1, poke1, player2, poke2) {
+  const container = document.getElementById("battleArena");
+  const resultDiv = document.getElementById("battleResult");
+  container.innerHTML = "";
+  resultDiv.innerHTML = "";
+
+  if (!poke1 || !poke2) {
+    resultDiv.innerHTML = "אחד השחקנים ללא פוקימון מועדף.";
+    return;
+  }
+
+  const score1 = calculateScore(poke1);
+  const score2 = calculateScore(poke2);
+
+  const card1 = generatePokemonCard(player1, poke1, score1);
+  const card2 = generatePokemonCard(player2, poke2, score2);
+
+  container.appendChild(card1);
+  container.appendChild(card2);
+
+  if (score1 > score2) resultDiv.textContent = `🏆 ${player1} ניצח!`;
+  else if (score2 > score1) resultDiv.textContent = `🏆 ${player2} ניצח!`;
+  else resultDiv.textContent = "🔁 תיקו!";
+}
+
+function generatePokemonCard(playerName, pokemon, score) {
+  const div = document.createElement("div");
+  div.className = "pokemon-card";
+  div.innerHTML = `
+    <h3>${playerName}</h3>
+    <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+    <p><strong>${pokemon.name}</strong></p>
+    <p>Score: ${score}</p>
+  `;
+  return div;
+}

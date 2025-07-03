@@ -159,7 +159,8 @@ function cleanPokemonData(poke) {
     name: poke.name,
     sprites: { front_default: poke.sprites.front_default },
     types: poke.types,
-    abilities: poke.abilities
+    abilities: poke.abilities,
+    stats: poke.stats
   };
 }
 
@@ -187,6 +188,7 @@ function addToFavorites(pokemon) {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const token = sessionStorage.getItem("token");
 
+
   if (!user || !token) {
     alert("You must be logged in to add to favorites");
     window.location.href = "login.html";
@@ -202,7 +204,8 @@ function addToFavorites(pokemon) {
       name: pokemon.name,
       sprites: pokemon.sprites,
       types: pokemon.types,
-      abilities: pokemon.abilities
+      abilities: pokemon.abilities,
+      stats: pokemon.stats
     });
     localStorage.setItem(key, JSON.stringify(favorites));
 
@@ -216,7 +219,8 @@ function addToFavorites(pokemon) {
         name: pokemon.name,
         sprites: pokemon.sprites,
         types: pokemon.types,
-        abilities: pokemon.abilities
+        abilities: pokemon.abilities,
+        stats: pokemon.stats
       }),
     })
       .then(res => res.json())

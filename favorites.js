@@ -55,11 +55,11 @@ function displayFavorites(favorites) {
     const imageUrl = poke.sprites?.front_default || "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png";
 
     const types = Array.isArray(poke.types)
-      ? poke.types.filter(t => t?.type?.name).map(t => t.type.name).join(", ")
+      ? poke.types.join(", ")
       : "Unknown";
 
     const abilities = Array.isArray(poke.abilities)
-      ? poke.abilities.filter(a => a?.ability?.name).map(a => a.ability.name).join(", ")
+      ? poke.abilities.join(", ")
       : "Unknown";
 
     const card = document.createElement("div");
@@ -71,16 +71,56 @@ function displayFavorites(favorites) {
       <img src="${imageUrl}" alt="${poke.name}" />
       <p><strong>Type(s):</strong> ${types}</p>
       <p><strong>Abilities:</strong> ${abilities}</p>
-
+      <div class="stats-container" id="stats-${poke.id}" style="display:none;"></div>
       <button class="remove-btn" onclick="removeFromFavorites(${poke.id})">Remove</button>
       <button class="json-btn" onclick='downloadSingleJSON(${JSON.stringify(poke)})'>JSON 📄</button>
       <button class="csv-btn" onclick='downloadSingleCSV(${JSON.stringify(poke)})'>CSV 📊</button>
-      <button class="info-btn" onclick="goToDetails(${poke.id})">More Info ℹ️</button>
+      <button class="info-btn" onclick="window.location.href='poke_details.html?id=${poke.id}'">More Info ℹ️</button>
+
+
     `;
 
     container.appendChild(card);
   });
 }
+
+// Load Pokémon stats and display them
+function loadStats(pokemonId) {
+  const statsContainer = document.getElementById(`stats-${pokemonId}`);
+  if (!statsContainer) return;
+
+  // כבר מוצג? נסתיר
+  if (statsContainer.style.display === "block") {
+    statsContainer.style.display = "none";
+    statsContainer.innerHTML = "";
+    return;
+  }
+
+  // אם עדיין לא נטען – נטען מה-API
+  fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!data.stats) return;
+
+      const statsList = data.stats.map(stat => {
+        return `<li><strong>${stat.stat.name}:</strong> ${stat.base_stat}</li>`;
+      }).join("");
+
+      statsContainer.innerHTML = `
+        <p><strong>Stats:</strong></p>
+        <ul>${statsList}</ul>
+      `;
+      statsContainer.style.display = "block";
+    })
+    .catch(err => {
+      console.error("Failed to load stats:", err);
+      statsContainer.innerHTML = "<p style='color:red;'>Failed to load stats.</p>";
+      statsContainer.style.display = "block";
+    });
+}
+
+
+
 
 
 // Remove a Pokémon from favorites

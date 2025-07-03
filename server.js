@@ -92,7 +92,7 @@ function authMiddleware(req, res, next) {
 
 // --- ⭐ Favorites Routes ---
 // --- 📥 קבלת מועדפים (חובה כדי שהדף favorite.html יעבוד) ---
-app.get('/users/:userId/favorites', async (req, res) => {
+/*app.get('/users/:userId/favorites', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user)
@@ -103,7 +103,23 @@ app.get('/users/:userId/favorites', async (req, res) => {
     console.error('Error fetching favorites:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
+});*/
+
+// --- ⭐ Favorites Routes ---
+// --- 📥 קבלת מועדפים (חובה כדי שהדף favorite.html יעבוד) ---
+app.get('/users/:userId/favorites', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json(user.favorites || []);
+  } catch (err) {
+    console.error('Error fetching favorites:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
+
+
 
 
 // --- 📤 הורדת מועדפים כ-CSV ---
@@ -154,9 +170,13 @@ app.post('/users/:userId/favorites', async (req, res) => {
     if (!user)
       return res.status(404).json({ success: false, message: 'User not found' });
 
-    const exists = user.favorites.find(p => p.id === req.body.id);
+    const simplifiedPokemon = simplifyPokemonData(req.body);
+
+    //console.log("📦 פוקימון מפושט:", simplifiedPokemon);
+
+    const exists = user.favorites.find(p => p.id === simplifiedPokemon.id);
     if (!exists) {
-      user.favorites.push(req.body);
+      user.favorites.push(simplifiedPokemon);
       await user.save();
     }
 
@@ -166,6 +186,7 @@ app.post('/users/:userId/favorites', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 
 // --- ❌ הסרת פוקימון מהמועדפים ---
@@ -188,3 +209,49 @@ app.delete('/users/:userId/favorites/:pokeId', async (req, res) => {
 
 // Start server
 app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
+
+
+
+// החזרת משתמש רנדומלי מתוך רשימת המחוברים (חוץ מהמזהה שקיבלנו)
+app.get('/users/random-opponent/:id', async (req, res) => {
+  const myId = req.params.id;
+
+  try {
+    const onlineUsers = await User.find({
+      _id: { $ne: myId },
+      online: true
+    });
+
+    if (onlineUsers.length === 0) {
+      return res.status(404).json({ error: "לא נמצאו יריבים מחוברים כרגע" });
+    }
+
+    const randomOpponent = onlineUsers[Math.floor(Math.random() * onlineUsers.length)];
+
+    res.json({
+      id: randomOpponent._id,
+      name: randomOpponent.name,
+      favorites: randomOpponent.favorites || []
+    });
+  } catch (err) {
+    console.error("שגיאה במציאת יריב רנדומלי:", err);
+    res.status(500).json({ error: "שגיאת שרת" });
+  }
+});
+
+
+
+// פונקציה לסינון נתוני פוקימון
+function simplifyPokemonData(pokemon) {
+  return {
+    id: pokemon.id,
+    name: pokemon.name,
+    sprites: {
+      front_default: pokemon.sprites?.front_default || ""
+    },
+    types: (pokemon.types || []).map(t => t.type?.name),
+    abilities: (pokemon.abilities || []).map(a => a.ability?.name)
+  };
+}
+
+

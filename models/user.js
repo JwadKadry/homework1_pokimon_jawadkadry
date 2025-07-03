@@ -34,7 +34,12 @@ const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
-  favorites: { type: [pokemonSchema], default: [] }
+  favorites: { type: [pokemonSchema], default: [], 
+    online: {
+      type: Boolean,
+      default: false
+    }
+   }
 });
 
 module.exports = mongoose.model('User', userSchema, 'users');

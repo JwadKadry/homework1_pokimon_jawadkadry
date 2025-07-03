@@ -1,5 +1,5 @@
 function startBotBattle() {
-  window.location.href = "vs-bot.html";
+  window.location.href = "player-vs-player.html";
 }
 
 function startRandomBattle() {

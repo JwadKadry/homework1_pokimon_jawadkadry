@@ -194,3 +194,7 @@ function downloadSingleCSV(poke) {
 function goToDetails(pokemonId) {
   window.location.href = `Poke_Details.html?id=${pokemonId}`;
 }
+
+function goBack(){
+  window.location.href="index.html";
+}

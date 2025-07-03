@@ -3,6 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 const cors = require('cors');
 const User = require('./models/user');
 
@@ -88,6 +89,8 @@ app.post('/login', async (req, res) => {
     if (!match) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
+    user.online = true;
+    await user.save();
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
     res.json({
@@ -97,6 +100,16 @@ app.post('/login', async (req, res) => {
     });
   } catch (err) {
     console.error('Login error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+// --- 🔐 Logout
+app.post('/logout', authMiddleware, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.userId, { online: false });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Logout error:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -207,20 +220,29 @@ app.delete('/users/:userId/favorites/:pokeId', async (req, res) => {
 });
 
 // --- 👥 מציאת יריב רנדומלי
+// --- 👥 מציאת יריב רנדומלי
 app.get('/users/random-opponent/:id', async (req, res) => {
   const myId = req.params.id;
 
   try {
-    const onlineUsers = await User.find({
+    // קודם ננסה רק משתמשים שמסומנים כ־online
+    let candidates = await User.find({
       _id: { $ne: myId },
       online: true
     });
 
-    if (onlineUsers.length === 0) {
-      return res.status(404).json({ error: "לא נמצאו יריבים מחוברים כרגע" });
+    // אם אין כאלה, ניפול חזרה לכל משתמש אחר
+    if (candidates.length === 0) {
+      candidates = await User.find({
+        _id: { $ne: myId }
+      });
     }
 
-    const randomOpponent = onlineUsers[Math.floor(Math.random() * onlineUsers.length)];
+    if (candidates.length === 0) {
+      return res.status(404).json({ error: "לא נמצאו יריבים" });
+    }
+
+    const randomOpponent = candidates[Math.floor(Math.random() * candidates.length)];
 
     res.json({
       id: randomOpponent._id,
@@ -232,6 +254,101 @@ app.get('/users/random-opponent/:id', async (req, res) => {
     res.status(500).json({ error: "שגיאת שרת" });
   }
 });
+
+
+
+app.post('/arena/random-vs-player', async (req, res) => {
+  try {
+    const { userId, pokemon } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user || !user.favorites || user.favorites.length < 1) {
+      return res.status(400).json({ message: "לא נמצאו פייבוריטים" });
+    }
+
+    const candidates = user.favorites.filter(p => p.name !== pokemon.name);
+    if (candidates.length === 0) {
+      return res.status(400).json({ message: "אין פוקימונים נוספים כדי לבחור יריב." });
+    }
+
+    const opponentPokemon = candidates[Math.floor(Math.random() * candidates.length)];
+
+    const getScore = (p) => {
+      return (
+        0.3 * (p.hp ?? 0) +
+        0.4 * (p.attack ?? 0) +
+        0.2 * (p.defense ?? 0) +
+        0.1 * (p.speed ?? 0) +
+        0.15 * (((p.specialAttack ?? 0) + (p.specialDefense ?? 0)) / 2)
+      );
+    };
+
+    const yourScore = getScore(pokemon);
+    const opponentScore = getScore(opponentPokemon);
+
+    res.json({
+      yourScore: yourScore.toFixed(2),
+      opponentScore: opponentScore.toFixed(2),
+      winner: yourScore >= opponentScore ? userId : "opponent",
+      opponentPokemon: {
+        id: opponentPokemon.id,
+        name: opponentPokemon.name,
+        stats: opponentPokemon.stats,
+        sprites: opponentPokemon.sprites
+      },
+      opponentName: "שחקן רנדומלי"
+    });
+
+  } catch (err) {
+    console.error("שגיאה בקרב:", err);
+    res.status(500).json({ message: "שגיאה בשרת" });
+  }
+});
+
+
+// --- 🤖 קרב מול בוט
+app.post('/arena/vs-bot', async (req, res) => {
+  try {
+    const { userId, pokemon: userPoke } = req.body;
+
+    // 1) sanity-check: user must have passed a valid favorite
+    if (!userPoke || !userPoke.id) {
+      return res.status(400).json({ message: 'בחר פוקימון תקין לקרב' });
+    }
+
+    // 2) pick a random Pokémon ID from the entire PokéAPI range
+    //    (adjust MAX_ID if needed)
+    const MAX_ID = 1010;
+    const botId = Math.floor(Math.random() * MAX_ID) + 1;
+
+    // 3) fetch its full data from PokéAPI
+    const pokeRes = await axios.get(`https://pokeapi.co/api/v2/pokemon/${botId}`);
+    const botPoke = simplifyPokemonData(pokeRes.data);
+
+    // 4) score function (reuse your weights)
+    const score = p =>
+      p.stats
+        .filter(s => typeof s.base_stat === 'number')
+        .reduce((sum, s) => sum + s.base_stat, 0);
+
+    const yourScore     = score(userPoke);
+    const opponentScore = score(botPoke);
+
+    // 5) send back everything the front-end needs
+    res.json({
+      yourScore:     yourScore.toFixed(0),
+      opponentScore: opponentScore.toFixed(0),
+      winner:        yourScore >= opponentScore ? 'you' : 'bot',
+      botPokemon:    botPoke,
+      botName:       'Bot'
+    });
+
+  } catch (err) {
+    console.error("❌ /arena/vs-bot error:", err);
+    res.status(500).json({ message: 'שגיאת שרת בקרב מול בוט' });
+  }
+});
+
 
 // --- 🚀 Start server
 app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));

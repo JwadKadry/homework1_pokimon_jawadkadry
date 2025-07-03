@@ -1,0 +1,67 @@
+/* Styles for /arena/vs-bot page */
+
+/* Layout grid for favorites */
+#favoritesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Card for each Pokémon */
+  .pokemon-card {
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Highlight selected favorite */
+  .pokemon-card.selected {
+    border: 2px solid #3b82f6;
+  }
+  
+  /* Layout for battle arena */
+  .battle-arena {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    margin-top: 1.5rem;
+  }
+  
+  /* Style winner card */
+  .pokemon-card.winner {
+    box-shadow: 0 0 10px 3px gold;
+  }
+  
+  /* Countdown timer */
+  #countdown {
+    font-size: 2rem;
+    margin: 1rem 0;
+    text-align: center;
+  }
+  
+  /* Result text */
+  .battle-result {
+    text-align: center;
+    font-size: 1.25rem;
+    margin-top: 1rem;
+  }
+  
+  /* Container card for the arena page */
+  .arena-card {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Disabled button state */
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  

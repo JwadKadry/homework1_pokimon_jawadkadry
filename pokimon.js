@@ -9,16 +9,50 @@ let cachedOptions = JSON.parse(localStorage.getItem("pokeSuggestions")) || {
 document.addEventListener("DOMContentLoaded", () => {
   loadLastSearch(); // load previous search if available
   document.getElementById("search_choice").addEventListener("change", loadSuggestions);
+
+  // Add logout/home buttons
+  const userData = sessionStorage.getItem("user");
+  const headerArea = document.createElement("div");
+  headerArea.style.position = "fixed";
+  headerArea.style.top = "10px";
+  headerArea.style.left = "10px";
+  headerArea.style.zIndex = "999";
+  headerArea.style.gap = "10px";
+
+  if (userData) {
+    const arenaBtn = document.createElement("button");
+    arenaBtn.textContent = "🎮 זירת הקרבות";
+    arenaBtn.onclick = () => window.location.href = "arena.html";
+    arenaBtn.classList.add("arena-button");
+    headerArea.appendChild(arenaBtn);
+
+    const logoutBtn = document.createElement("button");
+    logoutBtn.textContent = "🔓 Logout";
+    logoutBtn.onclick = logout;
+    headerArea.appendChild(logoutBtn);
+  } else {
+    const homeBtn = document.createElement("button");
+    homeBtn.textContent = "🏠 Back to Homepage";
+    homeBtn.onclick = () => window.location.href = "homepage.html";
+    headerArea.appendChild(homeBtn);
+  }
+
+  document.body.appendChild(headerArea);
 });
 
-// Load autocomplete suggestions based on selected search type
+// Get auth headers
+function getAuthHeaders() {
+  const token = sessionStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// Load autocomplete suggestions
 function loadSuggestions() {
   return new Promise((resolve) => {
     const searchChoice = document.getElementById("search_choice").value;
     const input = document.getElementById("searchInput");
-    const datalist = document.getElementById("suggestions");
 
-    input.value = ""; // clear input on search type change
+    input.value = "";
 
     if (cachedOptions[searchChoice]?.length > 0) {
       updateDatalist(cachedOptions[searchChoice]);
@@ -46,13 +80,13 @@ function loadSuggestions() {
   });
 }
 
-// Update datalist with suggestions
+// Update datalist
 function updateDatalist(list) {
   const datalist = document.getElementById("suggestions");
   datalist.innerHTML = list.map(name => `<option value="${name}">`).join("");
 }
 
-// Search Pokémon based on input and type
+// Search Pokémon
 function searchPokimon() {
   const searchChoice = document.getElementById("search_choice").value;
   const value = document.getElementById("searchInput").value.trim().toLowerCase();
@@ -64,7 +98,6 @@ function searchPokimon() {
 
   let lastResults = [];
 
-  // By name or ID
   if (searchChoice === "name") {
     if (!isNaN(value)) {
       fetch(`https://pokeapi.co/api/v2/pokemon/${value}`)
@@ -84,7 +117,6 @@ function searchPokimon() {
       return;
     }
 
-    // Partial name match
     fetch("https://pokeapi.co/api/v2/pokemon?limit=10000")
       .then(res => res.json())
       .then(data => {
@@ -111,7 +143,6 @@ function searchPokimon() {
       });
   }
 
-  // By type or ability
   else if (searchChoice === "type" || searchChoice === "ability") {
     fetch(`https://pokeapi.co/api/v2/${searchChoice}`)
       .then(res => res.json())
@@ -152,19 +183,28 @@ function searchPokimon() {
   }
 }
 
-// Clean data for saving to localStorage
+// Clean Pokémon data
 function cleanPokemonData(poke) {
   return {
     id: poke.id,
     name: poke.name,
-    sprites: { front_default: poke.sprites.front_default },
-    types: poke.types,
-    abilities: poke.abilities,
-    stats: poke.stats
+    sprites: { front_default: poke.sprites?.front_default || "" },
+    types: (poke.types || []).map(t =>
+      t?.type?.name ? { type: { name: t.type.name } } :
+      typeof t === "string" ? { type: { name: t } } : null
+    ).filter(Boolean),
+    abilities: (poke.abilities || []).map(a =>
+      a?.ability?.name ? { ability: { name: a.ability.name } } :
+      typeof a === "string" ? { ability: { name: a } } : null
+    ).filter(Boolean),
+    stats: (poke.stats || []).map(stat => ({
+      base_stat: stat.base_stat,
+      stat: { name: stat.stat?.name || "Unknown" }
+    }))
   };
 }
 
-// Display a Pokémon card on the screen
+// Display Pokémon
 function displayPokemon(pokemon) {
   const container = document.getElementById("results");
   const card = document.createElement("div");
@@ -176,18 +216,17 @@ function displayPokemon(pokemon) {
     <p><strong>Type: </strong> ${pokemon.types.map(t => t.type.name).join(", ")}</p>
     <p><strong>Ability: </strong> ${pokemon.abilities.map(a => a.ability.name).join(", ")}</p>
     <div class="button-group">
-      <button class="favorite" onclick='addToFavorites(${JSON.stringify(pokemon)})'>❤️ Add to Favorites</button>
-      <button onclick="goToDetails(${pokemon.id})">More Info ℹ️</button>
+      <button class="favorite" onclick='addToFavorites(${JSON.stringify(pokemon)})'>❤ Add to Favorites</button>
+      <button onclick="goToDetails(${pokemon.id})">More Info ℹ</button>
     </div>
   `;
   container.appendChild(card);
 }
 
-// Add Pokémon to favorites (local + server)
+// Add to favorites
 function addToFavorites(pokemon) {
   const user = JSON.parse(sessionStorage.getItem("user"));
   const token = sessionStorage.getItem("token");
-
 
   if (!user || !token) {
     alert("You must be logged in to add to favorites");
@@ -199,29 +238,17 @@ function addToFavorites(pokemon) {
   let favorites = JSON.parse(localStorage.getItem(key) || "[]");
 
   if (!favorites.find(p => p.id === pokemon.id)) {
-    favorites.push({
-      id: pokemon.id,
-      name: pokemon.name,
-      sprites: pokemon.sprites,
-      types: pokemon.types,
-      abilities: pokemon.abilities,
-      stats: pokemon.stats
-    });
+    const simplified = cleanPokemonData(pokemon);
+    favorites.push(simplified);
     localStorage.setItem(key, JSON.stringify(favorites));
 
     fetch(`http://localhost:3000/users/${user.id}/favorites`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...getAuthHeaders()
       },
-      body: JSON.stringify({
-        id: pokemon.id,
-        name: pokemon.name,
-        sprites: pokemon.sprites,
-        types: pokemon.types,
-        abilities: pokemon.abilities,
-        stats: pokemon.stats
-      }),
+      body: JSON.stringify(simplified)
     })
       .then(res => res.json())
       .then(data => {
@@ -235,7 +262,7 @@ function addToFavorites(pokemon) {
   }
 }
 
-// Load last search and results
+// Load last search
 function loadLastSearch() {
   const last = JSON.parse(localStorage.getItem("lastSearch"));
   const results = JSON.parse(localStorage.getItem("lastSearchResults"));
@@ -251,7 +278,7 @@ function loadLastSearch() {
   }
 }
 
-// Navigate to favorites page
+// Go to favorites
 function goToFavorites() {
   const user = sessionStorage.getItem("user");
   const token = sessionStorage.getItem("token");
@@ -265,52 +292,14 @@ function goToFavorites() {
   window.location.href = "favorite.html";
 }
 
-// Navigate to Pokémon details page
+// Go to Pokémon details
 function goToDetails(pokemonId) {
   window.location.href = `Poke_Details.html?id=${pokemonId}`;
 }
 
-// Logout user
+// Logout
 function logout() {
   sessionStorage.removeItem("user");
   sessionStorage.removeItem("token");
   window.location.href = "homepage.html";
 }
-
-// Display logout or home button in top-left corner
-document.addEventListener("DOMContentLoaded", () => {
-  const userData = sessionStorage.getItem("user");
-  const headerArea = document.createElement("div");
-  headerArea.style.position = "fixed";
-  headerArea.style.top = "10px";
-  headerArea.style.left = "10px";
-  headerArea.style.zIndex = "999";
-  headerArea.style.gap = "10px"; // מרווח בין הכפתורים
-
-  if (userData) {
-     const arenaBtn = document.createElement("button");
-    arenaBtn.textContent = "🎮 זירת הקרבות";
-    arenaBtn.onclick = () => window.location.href = "arena.html";
-    arenaBtn.classList.add("arena-button");
-    headerArea.appendChild(arenaBtn);
-
-    const logoutBtn = document.createElement("button");
-    logoutBtn.textContent = "🔓 Logout";
-    logoutBtn.onclick = logout;
-    headerArea.appendChild(logoutBtn);
-
-    
-
-
-  } else {
-    const homeBtn = document.createElement("button");
-    homeBtn.textContent = "🏠 Back to Homepage";
-    homeBtn.onclick = () => window.location.href = "homepage.html";
-    headerArea.appendChild(homeBtn);
-  }
-
-  document.body.appendChild(headerArea);
-});
-
-
-

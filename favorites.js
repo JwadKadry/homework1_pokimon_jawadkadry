@@ -20,12 +20,15 @@ function getAuthHeaders() {
 
 // Load favorites from server
 function loadFavorites() {
-  const sortBy = document.getElementById("sortSelect").value;
+  const sortBy = document.getElementById("sortSelect")?.value || "id";
   const user = JSON.parse(sessionStorage.getItem("user"));
   if (!user || !user.id) return;
+
   const key = `favorites_${user.id}`;
 
-  fetch(`http://localhost:3000/users/${user.id}/favorites`)
+  fetch(`http://localhost:3000/users/${user.id}/favorites`, {
+    headers: getAuthHeaders()
+  })
     .then(res => res.json())
     .then(favorites => {
       localStorage.setItem(key, JSON.stringify(favorites));
@@ -55,11 +58,11 @@ function displayFavorites(favorites) {
     const imageUrl = poke.sprites?.front_default || "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png";
 
     const types = Array.isArray(poke.types)
-      ? poke.types.join(", ")
+      ? poke.types.map(t => t?.type?.name || "Unknown").join(", ")
       : "Unknown";
 
     const abilities = Array.isArray(poke.abilities)
-      ? poke.abilities.join(", ")
+      ? poke.abilities.map(a => a?.ability?.name || "Unknown").join(", ")
       : "Unknown";
 
     const card = document.createElement("div");
@@ -72,31 +75,28 @@ function displayFavorites(favorites) {
       <p><strong>Type(s):</strong> ${types}</p>
       <p><strong>Abilities:</strong> ${abilities}</p>
       <div class="stats-container" id="stats-${poke.id}" style="display:none;"></div>
+      <button onclick="loadStats(${poke.id})">📊 Stats</button>
       <button class="remove-btn" onclick="removeFromFavorites(${poke.id})">Remove</button>
       <button class="json-btn" onclick='downloadSingleJSON(${JSON.stringify(poke)})'>JSON 📄</button>
       <button class="csv-btn" onclick='downloadSingleCSV(${JSON.stringify(poke)})'>CSV 📊</button>
-      <button class="info-btn" onclick="window.location.href='poke_details.html?id=${poke.id}'">More Info ℹ️</button>
-
-
+      <button class="info-btn" onclick="goToDetails(${poke.id})">More Info ℹ</button>
     `;
 
     container.appendChild(card);
   });
 }
 
-// Load Pokémon stats and display them
+// Load Pokémon stats
 function loadStats(pokemonId) {
   const statsContainer = document.getElementById(`stats-${pokemonId}`);
   if (!statsContainer) return;
 
-  // כבר מוצג? נסתיר
   if (statsContainer.style.display === "block") {
     statsContainer.style.display = "none";
     statsContainer.innerHTML = "";
     return;
   }
 
-  // אם עדיין לא נטען – נטען מה-API
   fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
     .then(res => res.json())
     .then(data => {
@@ -119,28 +119,24 @@ function loadStats(pokemonId) {
     });
 }
 
-
-
-
-
 // Remove a Pokémon from favorites
 function removeFromFavorites(pokemonId) {
   const user = JSON.parse(sessionStorage.getItem("user"));
-  if (!user) {
+  const token = sessionStorage.getItem("token");
+
+  if (!user || !token) {
     alert("You must be logged in to remove favorites.");
     return;
   }
 
   const key = `favorites_${user.id}`;
   let favorites = JSON.parse(localStorage.getItem(key) || "[]");
-
-  // Remove from local storage
   favorites = favorites.filter(p => p.id !== pokemonId);
   localStorage.setItem(key, JSON.stringify(favorites));
 
-  // Remove from server
   fetch(`http://localhost:3000/users/${user.id}/favorites/${pokemonId}`, {
     method: "DELETE",
+    headers: getAuthHeaders()
   })
     .then(res => res.json())
     .then(data => {
@@ -155,11 +151,6 @@ function removeFromFavorites(pokemonId) {
     .catch(err => {
       console.error("Network error:", err);
     });
-}
-
-// Go back to search page
-function goBack() {
-  window.location.href = "index.html";
 }
 
 // Download single Pokémon as JSON
@@ -199,7 +190,7 @@ function downloadSingleCSV(poke) {
   URL.revokeObjectURL(url);
 }
 
-
+// Go to Pokémon details
 function goToDetails(pokemonId) {
   window.location.href = `Poke_Details.html?id=${pokemonId}`;
 }

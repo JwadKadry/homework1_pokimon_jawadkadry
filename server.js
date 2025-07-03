@@ -10,18 +10,43 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'your_secret_key'; // כדאי לשים ב־.env
 
-// Middleware
+// --- ✅ פונקציה לסינון נתוני פוקימון ---
+function simplifyPokemonData(pokemon) {
+  return {
+    id: pokemon.id,
+    name: pokemon.name,
+    sprites: {
+      front_default: pokemon.sprites?.front_default || ""
+    },
+    types: (pokemon.types || []).map(t => {
+      if (t?.type?.name) return { type: { name: t.type.name } };
+      if (typeof t === "string") return { type: { name: t } };
+      return null;
+    }).filter(Boolean),
+    abilities: (pokemon.abilities || []).map(a => {
+      if (a?.ability?.name) return { ability: { name: a.ability.name } };
+      if (typeof a === "string") return { ability: { name: a } };
+      return null;
+    }).filter(Boolean),
+    stats: (pokemon.stats || []).map(stat => ({
+      base_stat: stat.base_stat,
+      stat: { name: stat.stat?.name || "Unknown" }
+    }))
+  };
+}
+
+// --- Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname, { index: 'homepage.html' }));
 
-// Connect to MongoDB
+// --- Connect to MongoDB
 mongoose.connect('mongodb+srv://bsharyamin:Basharyamin1@pokmondb.z0c4hkx.mongodb.net/registerDB?retryWrites=true&w=majority&appName=PokmonDB')
   .then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// --- 🔐 Registration ---
+// --- 🔐 Registration
 app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -46,7 +71,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// --- 🔐 Login ---
+// --- 🔐 Login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -76,7 +101,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// --- 🛡️ Auth Middleware ---
+// --- 🛡 Auth Middleware
 function authMiddleware(req, res, next) {
   const auth = req.headers.authorization?.split(' ')[1];
   if (!auth) return res.status(401).json({ message: 'Missing token' });
@@ -90,23 +115,7 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// --- ⭐ Favorites Routes ---
-// --- 📥 קבלת מועדפים (חובה כדי שהדף favorite.html יעבוד) ---
-/*app.get('/users/:userId/favorites', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.userId);
-    if (!user)
-      return res.status(404).json({ success: false, message: 'User not found' });
-
-    res.json(user.favorites || []);
-  } catch (err) {
-    console.error('Error fetching favorites:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});*/
-
-// --- ⭐ Favorites Routes ---
-// --- 📥 קבלת מועדפים (חובה כדי שהדף favorite.html יעבוד) ---
+// --- 📥 קבלת מועדפים
 app.get('/users/:userId/favorites', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -119,10 +128,7 @@ app.get('/users/:userId/favorites', async (req, res) => {
   }
 });
 
-
-
-
-// --- 📤 הורדת מועדפים כ-CSV ---
+// --- 📤 הורדת מועדפים כ-CSV
 app.get('/users/:userId/favorites/download', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -161,9 +167,7 @@ app.get('/users/:userId/favorites/download', async (req, res) => {
   }
 });
 
-
-
-// --- ➕ הוספת פוקימון למועדפים ---
+// --- ➕ הוספת פוקימון למועדפים
 app.post('/users/:userId/favorites', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -171,8 +175,6 @@ app.post('/users/:userId/favorites', async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
 
     const simplifiedPokemon = simplifyPokemonData(req.body);
-
-    //console.log("📦 פוקימון מפושט:", simplifiedPokemon);
 
     const exists = user.favorites.find(p => p.id === simplifiedPokemon.id);
     if (!exists) {
@@ -187,9 +189,7 @@ app.post('/users/:userId/favorites', async (req, res) => {
   }
 });
 
-
-
-// --- ❌ הסרת פוקימון מהמועדפים ---
+// --- ❌ הסרת פוקימון מהמועדפים
 app.delete('/users/:userId/favorites/:pokeId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -206,13 +206,7 @@ app.delete('/users/:userId/favorites/:pokeId', async (req, res) => {
   }
 });
 
-
-// Start server
-app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
-
-
-
-// החזרת משתמש רנדומלי מתוך רשימת המחוברים (חוץ מהמזהה שקיבלנו)
+// --- 👥 מציאת יריב רנדומלי
 app.get('/users/random-opponent/:id', async (req, res) => {
   const myId = req.params.id;
 
@@ -239,19 +233,5 @@ app.get('/users/random-opponent/:id', async (req, res) => {
   }
 });
 
-
-
-// פונקציה לסינון נתוני פוקימון
-function simplifyPokemonData(pokemon) {
-  return {
-    id: pokemon.id,
-    name: pokemon.name,
-    sprites: {
-      front_default: pokemon.sprites?.front_default || ""
-    },
-    types: (pokemon.types || []).map(t => t.type?.name),
-    abilities: (pokemon.abilities || []).map(a => a.ability?.name)
-  };
-}
-
-
+// --- 🚀 Start server
+app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));

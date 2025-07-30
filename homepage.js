@@ -2,20 +2,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const userData = sessionStorage.getItem("user");
   const nav = document.querySelector(".top-nav nav");
 
-  // אם המשתמש מחובר – הצג ברכה וכפתורי פעולה
+  // If the user is logged in – show greeting and action buttons
   if (userData) {
     const user = JSON.parse(userData);
 
-    // הצגת שם משתמש
+    // Display user name
     const welcome = document.createElement("span");
-    welcome.textContent = `שלום, ${user.name}`;
+    welcome.textContent = `Hello, ${user.name}`;
     welcome.style.marginRight = "20px";
     welcome.style.fontWeight = "bold";
     nav.appendChild(welcome);
 
-    // כפתור התנתקות
+    // Logout button
     const logoutBtn = document.createElement("button");
-    logoutBtn.textContent = "🔓 התנתק";
+    logoutBtn.textContent = "🔓 Logout";
     logoutBtn.style.marginRight = "10px";
     logoutBtn.onclick = () => {
       sessionStorage.removeItem("user");
@@ -23,9 +23,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     nav.appendChild(logoutBtn);
 
-    // כפתור זירת הקרבות
+    // Arena button
     const arenaBtn = document.createElement("button");
-    arenaBtn.textContent = "🎮 זירת הקרבות";
+    arenaBtn.textContent = "🎮 Battle Arena";
     arenaBtn.style.marginRight = "10px";
     arenaBtn.onclick = () => {
       window.location.href = "arena.html";
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     nav.appendChild(arenaBtn);
   }
 
-  // טען את רשימת המפתחים
+  // Load developer list
   fetch('developers.json')
     .then(response => {
       if (!response.ok) throw new Error('Unable to load developers data');
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(developers => {
       const devList = document.getElementById('devList');
-      devList.innerHTML = ''; // ניקוי קודם למניעת כפילות
+      devList.innerHTML = ''; // Clear to prevent duplicates
       developers.forEach(({ name, id }) => {
         const li = document.createElement('li');
         li.textContent = `${name} – ID: ${id}`;

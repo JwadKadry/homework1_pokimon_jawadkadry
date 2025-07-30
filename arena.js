@@ -7,9 +7,13 @@ function startRandomBattle() {
 }
 
 function viewBattleHistory() {
-  alert("תצוגת היסטוריית הקרבות תתווסף בשלב הבא.");
+  window.location.href = "battle-history.html";
 }
 
 function showRanking() {
   window.location.href = "leaderboard.html";
+}
+
+function goBack(){
+  window.location.href="index.html";
 }

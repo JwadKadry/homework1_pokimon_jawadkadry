@@ -9,9 +9,9 @@ const User = require('./models/user');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = 'your_secret_key'; // כדאי לשים ב־.env
+const JWT_SECRET = 'your_secret_key'; // Better to store in .env
 
-// --- ✅ פונקציה לסינון נתוני פוקימון ---
+// --- ✅ Function to simplify Pokémon data ---
 function simplifyPokemonData(pokemon) {
   return {
     id: pokemon.id,
@@ -103,6 +103,7 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 // --- 🔐 Logout
 app.post('/logout', authMiddleware, async (req, res) => {
   try {
@@ -128,7 +129,7 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// --- 📥 קבלת מועדפים
+// --- 📥 Get Favorites
 app.get('/users/:userId/favorites', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -141,12 +142,12 @@ app.get('/users/:userId/favorites', async (req, res) => {
   }
 });
 
-// --- 📤 הורדת מועדפים כ-CSV
+// --- 📤 Download Favorites as CSV
 app.get('/users/:userId/favorites/download', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
     if (!user || !user.favorites) {
-      return res.status(404).json({ message: "לא נמצאו מועדפים" });
+      return res.status(404).json({ message: "No favorites found" });
     }
 
     const favorites = user.favorites;
@@ -160,13 +161,13 @@ app.get('/users/:userId/favorites/download', async (req, res) => {
             .filter(t => t && t.type && t.type.name)
             .map(t => t.type.name)
             .join(" | ")
-        : "לא ידוע",
+        : "Unknown",
       Array.isArray(p.abilities)
         ? p.abilities
             .filter(a => a && a.ability && a.ability.name)
             .map(a => a.ability.name)
             .join(" | ")
-        : "לא ידוע"
+        : "Unknown"
     ]);
 
     const csv = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -175,12 +176,12 @@ app.get('/users/:userId/favorites/download', async (req, res) => {
     res.setHeader('Content-Type', 'text/csv');
     res.send(csv);
   } catch (err) {
-    console.error("שגיאה בהורדת CSV:", err);
-    res.status(500).json({ message: "שגיאת שרת" });
+    console.error("CSV download error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// --- ➕ הוספת פוקימון למועדפים
+// --- ➕ Add Pokémon to Favorites
 app.post('/users/:userId/favorites', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -202,7 +203,7 @@ app.post('/users/:userId/favorites', async (req, res) => {
   }
 });
 
-// --- ❌ הסרת פוקימון מהמועדפים
+// --- ❌ Remove Pokémon from Favorites
 app.delete('/users/:userId/favorites/:pokeId', async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -219,19 +220,16 @@ app.delete('/users/:userId/favorites/:pokeId', async (req, res) => {
   }
 });
 
-// --- 👥 מציאת יריב רנדומלי
-// --- 👥 מציאת יריב רנדומלי
+// --- 👥 Find Random Opponent
 app.get('/users/random-opponent/:id', async (req, res) => {
   const myId = req.params.id;
 
   try {
-    // קודם ננסה רק משתמשים שמסומנים כ־online
     let candidates = await User.find({
       _id: { $ne: myId },
       online: true
     });
 
-    // אם אין כאלה, ניפול חזרה לכל משתמש אחר
     if (candidates.length === 0) {
       candidates = await User.find({
         _id: { $ne: myId }
@@ -239,7 +237,7 @@ app.get('/users/random-opponent/:id', async (req, res) => {
     }
 
     if (candidates.length === 0) {
-      return res.status(404).json({ error: "לא נמצאו יריבים" });
+      return res.status(404).json({ error: "No opponents found" });
     }
 
     const randomOpponent = candidates[Math.floor(Math.random() * candidates.length)];
@@ -250,25 +248,24 @@ app.get('/users/random-opponent/:id', async (req, res) => {
       favorites: randomOpponent.favorites || []
     });
   } catch (err) {
-    console.error("שגיאה במציאת יריב רנדומלי:", err);
-    res.status(500).json({ error: "שגיאת שרת" });
+    console.error("Random opponent error:", err);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-
-
+// --- 🤝 Random Player Battle
 app.post('/arena/random-vs-player', async (req, res) => {
   try {
     const { userId, pokemon } = req.body;
 
     const user = await User.findById(userId);
     if (!user || !user.favorites || user.favorites.length < 1) {
-      return res.status(400).json({ message: "לא נמצאו פייבוריטים" });
+      return res.status(400).json({ message: "No favorites found" });
     }
 
     const candidates = user.favorites.filter(p => p.name !== pokemon.name);
     if (candidates.length === 0) {
-      return res.status(400).json({ message: "אין פוקימונים נוספים כדי לבחור יריב." });
+      return res.status(400).json({ message: "No other Pokémon to choose as opponent." });
     }
 
     const opponentPokemon = candidates[Math.floor(Math.random() * candidates.length)];
@@ -296,36 +293,30 @@ app.post('/arena/random-vs-player', async (req, res) => {
         stats: opponentPokemon.stats,
         sprites: opponentPokemon.sprites
       },
-      opponentName: "שחקן רנדומלי"
+      opponentName: "Random Player"
     });
 
   } catch (err) {
-    console.error("שגיאה בקרב:", err);
-    res.status(500).json({ message: "שגיאה בשרת" });
+    console.error("Battle error:", err);
+    res.status(500).json({ message: "Server error during battle" });
   }
 });
 
-
-// --- 🤖 קרב מול בוט
+// --- 🤖 Battle vs Bot
 app.post('/arena/vs-bot', async (req, res) => {
   try {
     const { userId, pokemon: userPoke } = req.body;
 
-    // 1) sanity-check: user must have passed a valid favorite
     if (!userPoke || !userPoke.id) {
-      return res.status(400).json({ message: 'בחר פוקימון תקין לקרב' });
+      return res.status(400).json({ message: 'Choose a valid Pokémon for battle' });
     }
 
-    // 2) pick a random Pokémon ID from the entire PokéAPI range
-    //    (adjust MAX_ID if needed)
     const MAX_ID = 1010;
     const botId = Math.floor(Math.random() * MAX_ID) + 1;
 
-    // 3) fetch its full data from PokéAPI
     const pokeRes = await axios.get(`https://pokeapi.co/api/v2/pokemon/${botId}`);
     const botPoke = simplifyPokemonData(pokeRes.data);
 
-    // 4) score function (reuse your weights)
     const score = p =>
       p.stats
         .filter(s => typeof s.base_stat === 'number')
@@ -334,7 +325,6 @@ app.post('/arena/vs-bot', async (req, res) => {
     const yourScore     = score(userPoke);
     const opponentScore = score(botPoke);
 
-    // 5) send back everything the front-end needs
     res.json({
       yourScore:     yourScore.toFixed(0),
       opponentScore: opponentScore.toFixed(0),
@@ -345,10 +335,87 @@ app.post('/arena/vs-bot', async (req, res) => {
 
   } catch (err) {
     console.error("❌ /arena/vs-bot error:", err);
-    res.status(500).json({ message: 'שגיאת שרת בקרב מול בוט' });
+    res.status(500).json({ message: 'Server error during bot battle' });
   }
 });
 
+// --- 🧮 Leaderboard
+app.get('/arena/leaderboard', async (req, res) => {
+  try {
+    const users = await User.find({});
+
+    const leaderboard = users.map(user => {
+      const battles = user.battles || [];
+
+      let wins = 0, draws = 0, losses = 0;
+
+      battles.forEach(b => {
+        if (b.result === 'win') wins++;
+        else if (b.result === 'draw') draws++;
+        else if (b.result === 'loss') losses++;
+      });
+
+      const points = wins * 3 + draws;
+      const total = battles.length;
+      const successRate = total > 0 ? (wins / total * 100).toFixed(2) : 0;
+
+      return {
+        name: user.name,
+        points,
+        battles: total,
+        wins,
+        draws,
+        losses,
+        successRate
+      };
+    });
+
+    leaderboard.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      return b.successRate - a.successRate;
+    });
+
+    res.json(leaderboard);
+  } catch (err) {
+    console.error("Leaderboard error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// --- ➕ Add Battle Record
+app.post('/users/:id/add-battle', async (req, res) => {
+  const { result, pokemonName, mode } = req.body;
+
+  if (!["win", "draw", "loss"].includes(result)) {
+    return res.status(400).json({ message: "Invalid result" });
+  }
+
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.battles.push({ result, pokemonName, mode });
+    await user.save();
+
+    res.json({ message: "Battle result added" });
+  } catch (err) {
+    console.error("Add battle error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// --- 🕓 Get Battle History
+app.get('/users/:id/battles', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json(user.battles || []);
+  } catch (err) {
+    console.error("Get battles error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 // --- 🚀 Start server
 app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));

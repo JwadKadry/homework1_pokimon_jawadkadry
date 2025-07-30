@@ -1,21 +1,25 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>⚔️ קרב מול בוט</title>
-  <!-- global styles -->
+  <title>⚔️ Battle vs Bot</title>
   <link rel="stylesheet" href="styles.css" />
-  <!-- arena-vs-bot page styles -->
   <link rel="stylesheet" href="arena-vs-bot.css" />
 </head>
 <body>
-  <div class="card arena-card">
-    <h1>⚔️ קרב מול בוט</h1>
-    <div id="favoritesGrid" class="grid"></div>
-    <button id="startBattleBtn" disabled>התחל קרב</button>
-    <div id="countdown"></div>
+  <div class="battle-container">
+    <h1>⚔️ Battle vs Bot</h1>
+
+    <div id="favoritesGrid" class="pokemon-grid"></div>
+
+    <button id="startBattleBtn" class="battle-btn" disabled>Start Battle</button>
+
+    <div id="countdown" class="countdown-display"></div>
+
     <div id="battleArena" class="battle-arena"></div>
     <div id="battleResult" class="battle-result"></div>
+
+    <button onclick="window.location.href='arena.html'" class="back-btn">⬅️ Back to Arena</button>
   </div>
 
   <script src="arena-vs-bot.js"></script>

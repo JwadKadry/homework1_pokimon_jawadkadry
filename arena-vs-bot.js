@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", init);
 async function init() {
   const user = JSON.parse(sessionStorage.getItem("user"));
   if (!user?.id) {
-    alert("עליך להיות מחובר כדי לשחק.");
+    alert("You must be logged in to play.");
     return window.location.href = "login.html";
   }
 
@@ -13,7 +13,7 @@ async function init() {
   const res = await fetch(`/users/${user.id}/favorites`);
   if (!res.ok) {
     const e = await res.json();
-    return alert(e.message || "שגיאה בטעינת מועדפים");
+    return alert(e.message || "Error loading favorites");
   }
   const favs = await res.json();
 
@@ -58,12 +58,22 @@ async function startBattle(user) {
 
   if (!res.ok) {
     const e = await res.json();
-    alert(e.message || "שגיאה בקרב");
+    alert(e.message || "Battle error");
     return btn.disabled = false;
   }
 
   const { yourScore, opponentScore, winner, botPokemon, botName } = await res.json();
   displayBattle(user.name, selectedPoke, botName, botPokemon, yourScore, opponentScore, winner);
+  console.log("selectedPoke = ", selectedPoke);
+  console.log("selectedPoke.name = ", selectedPoke?.name);
+
+  if (winner === "you") {
+    recordBattleResult(user.id, "win", selectedPoke.name, "bot");
+  } else if (winner === "bot") {
+    recordBattleResult(user.id, "loss", selectedPoke.name, "bot");
+  } else {
+    recordBattleResult(user.id, "draw", selectedPoke.name, "bot");
+  }
 }
 
 function displayBattle(p1Name, p1, p2Name, p2, s1, s2, winner) {
@@ -79,19 +89,29 @@ function displayBattle(p1Name, p1, p2Name, p2, s1, s2, winner) {
 
   arena.append(card1, card2);
   result.textContent = winner === "you"
-    ? `🏆 ${p1Name} ניצחת!`
-    : `🏆 ${p2Name} ניצח!`;
+    ? `🏆 ${p1Name} wins!`
+    : `🏆 ${p2Name} wins!`;
 }
 
 function generateCard(poke, score, ownerName) {
   const div = document.createElement("div");
   div.className = "pokemon-card";
+
   div.innerHTML = `
-    <h3>${ownerName}</h3>
-    <img src="${poke.sprites.front_default || poke.sprites.back_default}" />
-    <p>${poke.name}</p>
-    <p>ניקוד: ${score}</p>
+    <h3>${poke.name || "Pokemon"}</h3>
+    <img src="${poke.sprites?.front_default || poke.sprites?.back_default || 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'}" />
   `;
+
   return div;
 }
 
+function recordBattleResult(userId, result, pokemonName, mode) {
+  fetch(`http://localhost:3000/users/${userId}/add-battle`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ result, pokemonName, mode })
+  })
+  .then(res => res.json())
+  .then(data => console.log("✅ Bot battle saved:", data))
+  .catch(err => console.error("❌ Failed to save bot battle:", err));
+}

@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (userData) {
     const arenaBtn = document.createElement("button");
-    arenaBtn.textContent = "🎮 זירת הקרבות";
+    arenaBtn.textContent = "🎮 Battle arena";
     arenaBtn.onclick = () => window.location.href = "arena.html";
     arenaBtn.classList.add("arena-button");
     headerArea.appendChild(arenaBtn);

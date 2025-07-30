@@ -3,24 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>זירת הקרבות</title>
+  <title>Battle Arena </title>
   <link rel="stylesheet" href="arena.css">
 </head>
 <body>
   <div class="container">
-    <h1>זירת הקרבות</h1>
+    <h1>Battle Arena</h1>
     <button onclick="location.href='arena-vs-bot.html'">
-      🎮 קרב נגד בוט
+      Battle vs Bot 🎮
     </button>
     
     <!-- 2) vs Another Player -->
     <button onclick="location.href='player-vs-player.html'">
-      🤝 קרב רנדומלי מול שחקן אחר
+      Random Battle vs Another Player 🤝
     </button>
     
     <!-- (and the other two buttons as before) -->
-    <button onclick="viewBattleHistory()">📜 צפייה בהיסטוריית קרבות</button>
-    <button onclick="showRanking()">🏆 דירוג שחקנים</button>
+    <button onclick="viewBattleHistory()">View Battle History 📜</button>
+    <button onclick="showRanking()">Player Leaderboard 🏆</button>
+    <button class="menu-btn" onclick="goBack()">⬅️ Back</button>
+
   </div>
 
   <script src="arena.js"></script>

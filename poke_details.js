@@ -1,20 +1,20 @@
-// מקבל פרמטר מה-URL (למשל id של הפוקימון)
+// Gets a parameter from the URL (e.g., Pokémon ID)
 function getQueryParam(name) {
   const url = new URL(window.location.href);
   return url.searchParams.get(name);
 }
 
-// ניווט חזרה למועדפים
+// Navigate back to favorites
 function goBackToFavorites() {
   window.location.href = "favorite.html";
 }
 
-// ניווט חזרה לעמוד החיפוש
+// Navigate back to search page
 function goBackToSearch() {
   window.location.href = "index.html";
 }
 
-// טוען פרטי פוקימון לפי מזהה מה-URL
+// Loads Pokémon details by ID from the URL
 async function loadDetails() {
   const id = getQueryParam("id");
   const container = document.getElementById("details");
@@ -49,7 +49,9 @@ async function loadDetails() {
       `).join("")}
 
       <div style="margin-top: 20px;">
-        <button onclick="searchYoutube('${pokemon.name}')" class="action-btn">🎬 חפש סרטונים על ${pokemon.name} ביוטיוב</button>
+        <button onclick="searchYoutube('${pokemon.name}')" class="action-btn">
+          🎬 Search YouTube for ${pokemon.name} videos
+        </button>
       </div>
     `;
 
@@ -59,11 +61,11 @@ async function loadDetails() {
   }
 }
 
-// פותח חיפוש ביוטיוב לפי שם הפוקימון
+// Opens a YouTube search based on the Pokémon name
 function searchYoutube(pokemonName) {
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(pokemonName)}+pokemon`;
   window.open(searchUrl, "_blank");
 }
 
-// טעינה אוטומטית של פרטי הפוקימון כאשר הדף נטען
+// Automatically load Pokémon details when the page loads
 window.onload = loadDetails;

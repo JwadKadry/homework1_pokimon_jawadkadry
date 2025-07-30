@@ -1,0 +1,29 @@
+body {
+    direction: rtl;
+    font-family: Arial;
+    padding: 30px;
+    background-color: #f9f9f9;
+    text-align: center;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+  }
+  
+  th, td {
+    padding: 12px;
+    border: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .win { color: green; font-weight: bold; }
+  .draw { color: orange; font-weight: bold; }
+  .loss { color: red; font-weight: bold; }
+  

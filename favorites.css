@@ -6,6 +6,16 @@ body {
   background-color: #eef6fc;
   padding: 20px;
   margin: 0;
+  background: url('pokemonSearch.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.6); /* or rgba(0,0,0,0.3) for dark tint */
+  z-index: -1;
 }
 
 /* Main Title */

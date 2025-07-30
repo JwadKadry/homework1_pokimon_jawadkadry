@@ -3,6 +3,16 @@ body {
   background-color: #f3f7fa;
   margin: 0;
   padding: 0;
+  background: url('vsbot.jpeg') no-repeat bottom center fixed;
+  background-size: cover;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.6); /* or rgba(0,0,0,0.3) for dark tint */
+  z-index: -1;
 }
 
 .battle-container {
@@ -106,4 +116,30 @@ h1 {
 
 .back-btn:hover {
   background-color: #f0f0f0;
+}
+
+#countdownContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.85); /* light overlay */
+  display: none; /* show via JS */
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 999;
+}
+
+#countdownGif {
+  width: 140px;
+  height: auto;
+}
+
+.countdown-text {
+  font-size: 48px;
+  font-weight: bold;
+  color: #ff5722;
+  margin-top: 20px;
 }

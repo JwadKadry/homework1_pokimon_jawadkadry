@@ -4,13 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pokémon Search</title>
-  <link rel="stylesheet" href="pokimonstyle.css">
+  <link rel="stylesheet" href="index.css">
 </head>
 <body>
 
-  <!-- Title -->
-  <h1>Pokémon Search</h1>
-
+  <!-- ✅ Top Navigation Bar -->
+  <div class="top-bar">
+    <div class="left-actions">
+      <button class="nav-btn arena-btn" onclick="goToArena()">🎮 Battle Arena</button>
+    </div>
+  
+    <h1>Pokémon Search</h1>
+  
+    <div class="right-actions">
+      <button class="nav-btn logout-btn" onclick="logout()">🔒 Logout</button>
+    </div>
+  </div>
+  
+  <!-- ✅ Search Section -->
   <div class="search-container">
     <form class="search-form" onsubmit="searchPokimon(); return false;">
 
@@ -46,18 +57,11 @@
     </form>
   </div>
 
-  
-
-  <!-- Results -->
-  <h2>Search Results:</h2>
+  <!-- ✅ Search Results Section -->
+  <h2 class="search-results-title">:Search Results</h2>
   <div id="results"></div>
-  <img id="gifloader" src="Hourglass.gif" alt="Loading..." style="width:64px;display:none">
+  <img id="gifloader" src="Hourglass.gif" alt="Loading..." style="width:64px; display:none;">
 
-  <!--<button onclick="logout()" style="position: fixed; top: 10px; left: 10px;">🔓 Logout</button>-->
-  <!-- כפתור מעבר לזירת הקרבות (מוסתר כברירת מחדל) -->
-  
-
-
-  <script src="pokimon.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>

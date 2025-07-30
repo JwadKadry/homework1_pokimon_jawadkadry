@@ -2,9 +2,17 @@ body {
     direction: rtl;
     font-family: Arial, sans-serif;
     padding: 20px;
-    background-color: #f5f5f5;
+    background: url('vsbot.jpeg') no-repeat bottom center fixed;
+    background-size: cover;
   }
-  
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.6); /* or rgba(0,0,0,0.3) for dark tint */
+  z-index: -1;
+}
   h1 {
     text-align: center;
   }

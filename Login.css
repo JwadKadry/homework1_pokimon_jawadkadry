@@ -1,78 +1,157 @@
+/* ==== Global Body Styling ==== */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f1f1f1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-  }
-  
-  .login-container {
-    background-color: #fff;
-    padding: 30px 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    width: 350px;
-  }
-  
-  .login-container h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  form label {
-    display: block;
-    margin-top: 15px;
-    font-weight: bold;
-  }
-  
-  form input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  button {
-    width: 100%;
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
-    font-size: 16px;
-    margin-top: 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  button:hover {
-    background-color: #45a049;
-  }
-  
-  /* ✅ Added Custom Styles for Validation */
-  .is-invalid {
-    border-color: #dc3545 !important;
-  }
-  
-  .is-valid {
-    border-color: #28a745 !important;
-  }
-  
-  .invalid-feedback {
-    color: #dc3545;
-    font-size: 0.875em;
-    display: none;
-  }
-  
-  .valid-feedback {
-    color: #28a745;
-    font-size: 0.875em;
-    display: none;
-  }
-  .invalid-feedback,
-  .valid-feedback {
-    display: none;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+
+  background: url('login&register.jpg') no-repeat bottom center fixed;
+  background-size: cover;
+  background-color: #f1f1f1;
+  position: relative;
 }
-  
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.5); /* translucent white */
+  z-index: -1;
+}
+
+/* ==== Login Box Styling ==== */
+.login-container {
+  background-color: #fff;
+  padding: 30px 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 350px;
+}
+
+/* ==== Title Heading ==== */
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 24px;
+  color: #000;
+  text-shadow: 1px 1px 2px #000;
+}
+
+/* ==== Label & Input Styling ==== */
+form label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+form input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+form input:focus {
+  border-color: #4CAF50;
+  outline: none;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.4);
+}
+
+/* ==== Button Styling ==== */
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4CAF50;
+  color: white;
+  font-size: 16px;
+  margin-top: 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* ==== Validation Feedback ==== */
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+
+.is-valid {
+  border-color: #28a745 !important;
+}
+
+.invalid-feedback,
+.valid-feedback {
+  font-size: 0.875em;
+  display: none;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+}
+
+.valid-feedback {
+  color: #28a745;
+}
+
+/* ==== Responsive Design ==== */
+@media (max-width: 400px) {
+  .login-container {
+    width: 90%;
+    padding: 20px;
+  }
+}
+
+
+/* === Navigation Buttons === */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.btn-nav {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/*  Home Button */
+.home-btn {
+  background-color: #ddd;
+  color: #333;
+}
+.home-btn:hover {
+  background-color: #bbb;
+  color: white;
+}
+
+/* 🎨 Sign Up Button */
+.signup-btn {
+  background-color: #6f42c1; /* purple */
+  color: white;
+}
+.signup-btn:hover {
+  background-color: #5a32a3;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 15px;
+}

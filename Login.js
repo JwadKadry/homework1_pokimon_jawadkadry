@@ -54,20 +54,16 @@ form.addEventListener('submit', async (e) => {
     });
 
     const result = await res.json();
-    console.log('📦 Server response:', result);           // ← כל התשובה
-    console.log('✅ token:', result.token);                // ← ספציפית את הטוקן
 
     if (!res.ok || !result.token) {
       alert(result.message || 'Login failed');
       return;
     }
 
-    // login succeeded → save user in sessionStorage
+    // Save user and token in sessionStorage
     sessionStorage.setItem('user', JSON.stringify(result.user));
-    sessionStorage.setItem('token', result.token); // ✅ הוספה חשובה
+    sessionStorage.setItem('token', result.token);
 
-
-    // Redirect
     window.location.href = 'index.html';
 
   } catch (err) {
@@ -75,6 +71,3 @@ form.addEventListener('submit', async (e) => {
     alert('Network error. Please try again later.');
   }
 });
-
-const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
-

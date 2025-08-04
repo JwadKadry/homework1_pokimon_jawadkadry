@@ -9,21 +9,20 @@
 <body>
   <div class="container">
     <h1>Battle Arena</h1>
+    <p id="battleStatus" class="battle-status">Loading battle status...</p>
+  
     <button onclick="location.href='arena-vs-bot.html'">
       Battle vs Bot 🎮
     </button>
-    
-    <!-- 2) vs Another Player -->
+  
     <button onclick="location.href='player-vs-player.html'">
       Random Battle vs Another Player 🤝
     </button>
-    
-    <!-- (and the other two buttons as before) -->
+  
     <button onclick="viewBattleHistory()">View Battle History 📜</button>
     <button onclick="showRanking()">Player Leaderboard 🏆</button>
     <button class="menu-btn" onclick="goBack()">⬅️ Back</button>
-
-  </div>
+  </div>  
 
   <script src="arena.js"></script>
 </body>

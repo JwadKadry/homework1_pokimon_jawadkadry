@@ -33,7 +33,25 @@ function selectPoke(card, poke) {
   document.getElementById("startBattleBtn").disabled = false;
 }
 
+async function checkDailyLimit(userId) {
+  try {
+    const res = await fetch(`/users/${userId}/battles-today`);
+    const data = await res.json();
+    if (data.count >= 5) {
+      alert("❌ You've reached the daily limit of 5 battles.");
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("❌ Failed to check daily battle limit:", err);
+    return false;
+  }
+}
+
+
 async function startBattle(user) {
+  const allowed = await checkDailyLimit(user.id);
+  if (!allowed) return;
   const btn = document.getElementById("startBattleBtn");
   const cd = document.getElementById("countdown");
   const gif = document.getElementById("countdownGif");
@@ -44,7 +62,7 @@ async function startBattle(user) {
   gif.style.display = "block";
   cd.textContent = "";
   // Countdown from 3 to 1
-  for (let i = 4; i >= 1; i--) {
+  for (let i = 3; i >= 1; i--) {
     cd.textContent = i;
     await new Promise(r => setTimeout(r, 1000));
   }

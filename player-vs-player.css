@@ -80,3 +80,30 @@ body::before {
     background-color: #f1f1f1;
   }
   
+  #countdownContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.85); /* light overlay */
+    display: none; /* show via JS */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 999;
+  }
+  
+  #countdownGif {
+    width: 140px;
+    height: auto;
+  }
+  
+  .countdown-text {
+    font-size: 48px;
+    font-weight: bold;
+    color: #ff5722;
+    margin-top: 20px;
+  }
+
+  

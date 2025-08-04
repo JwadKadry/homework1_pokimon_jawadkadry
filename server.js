@@ -1,11 +1,13 @@
 const express = require('express');
 const path = require('path');   
+const fs = require('fs');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const cors = require('cors');
 const User = require('./models/user');
+const { Types } = require('mongoose');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -122,7 +124,7 @@ function authMiddleware(req, res, next) {
 
   try {
     const payload = jwt.verify(auth, JWT_SECRET);
-    req.userId = payload.userId;
+    req.userId = payload.id;
     next();
   } catch {
     res.status(401).json({ message: 'Invalid token' });
@@ -188,6 +190,14 @@ app.post('/users/:userId/favorites', async (req, res) => {
     if (!user)
       return res.status(404).json({ success: false, message: 'User not found' });
 
+    // Check favorite limit
+    if (user.favorites.length >= 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Favorite limit reached (max 10 Pokémon).'
+      });
+    }
+
     const simplifiedPokemon = simplifyPokemonData(req.body);
 
     const exists = user.favorites.find(p => p.id === simplifiedPokemon.id);
@@ -202,6 +212,7 @@ app.post('/users/:userId/favorites', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 // --- ❌ Remove Pokémon from Favorites
 app.delete('/users/:userId/favorites/:pokeId', async (req, res) => {
@@ -342,67 +353,85 @@ app.post('/arena/vs-bot', async (req, res) => {
 // --- 🧮 Leaderboard
 app.get('/arena/leaderboard', async (req, res) => {
   try {
-    const users = await User.find({});
+    const users = await User.find();
 
-    const leaderboard = users.map(user => {
-      const battles = user.battles || [];
+    // Prepare leaderboard data
+    const leaderboard = users
+      .map(user => {
+        const wins = user.battleWins || 0;
+        const draws = user.battleDraws || 0;
+        const losses = user.battleLosses || 0;
+        const battles = wins + draws + losses;
+        const points = wins * 3 + draws * 1;
+        const successRate = battles > 0 ? ((wins / battles) * 100).toFixed(2) : '0.00';
 
-      let wins = 0, draws = 0, losses = 0;
+        return {
+          name: user.name,
+          wins,
+          draws,
+          losses,
+          battles,
+          points,
+          successRate
+        };
+      })
+      .filter(player => player.battles >= 5) // Only include users with 5+ battles
+      .sort((a, b) => b.points - a.points);  // Sort by total points
 
-      battles.forEach(b => {
-        if (b.result === 'win') wins++;
-        else if (b.result === 'draw') draws++;
-        else if (b.result === 'loss') losses++;
-      });
-
-      const points = wins * 3 + draws;
-      const total = battles.length;
-      const successRate = total > 0 ? (wins / total * 100).toFixed(2) : 0;
-
-      return {
-        name: user.name,
-        points,
-        battles: total,
-        wins,
-        draws,
-        losses,
-        successRate
-      };
-    });
-
-    leaderboard.sort((a, b) => {
-      if (b.points !== a.points) return b.points - a.points;
-      return b.successRate - a.successRate;
+    // Assign ranks
+    leaderboard.forEach((player, index) => {
+      player.rank = index + 1;
     });
 
     res.json(leaderboard);
   } catch (err) {
-    console.error("Leaderboard error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error fetching leaderboard:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
+
+
+
 
 // --- ➕ Add Battle Record
-app.post('/users/:id/add-battle', async (req, res) => {
-  const { result, pokemonName, mode } = req.body;
-
-  if (!["win", "draw", "loss"].includes(result)) {
-    return res.status(400).json({ message: "Invalid result" });
-  }
-
+app.post('/users/:userId/add-battle', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const user = await User.findById(req.params.userId);
+    if (!user)
+      return res.status(404).json({ success: false, message: 'User not found' });
 
-    user.battles.push({ result, pokemonName, mode });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // start of day
+
+    // Count today's battles
+    const battlesToday = user.battles.filter(b => {
+      const battleDate = new Date(b.date);
+      return battleDate >= today;
+    });
+
+    if (battlesToday.length >= 5) {
+      return res.status(429).json({
+        success: false,
+        message: 'Battle limit reached for today (5 battles max)'
+      });
+    }
+
+    // Record new battle
+    user.battles.push({
+      result: req.body.result,
+      pokemonName: req.body.pokemonName,
+      mode: req.body.mode,
+      date: new Date()
+    });
+
     await user.save();
-
-    res.json({ message: "Battle result added" });
+    res.json({ success: true });
   } catch (err) {
-    console.error("Add battle error:", err);
-    res.status(500).json({ message: "Server error" });
+    console.error('Error saving battle:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 // --- 🕓 Get Battle History
 app.get('/users/:id/battles', async (req, res) => {
@@ -416,6 +445,108 @@ app.get('/users/:id/battles', async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+
+//load the data fron a json
+app.get('/api/homepage', (req, res) => {
+  const dataPath = path.join(__dirname, 'homepageData.json');
+
+  fs.readFile(dataPath, 'utf8', (err, jsonData) => {
+    if (err) {
+      console.error("Error reading JSON file:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    try {
+      const data = JSON.parse(jsonData);
+      res.json(data);
+    } catch (parseError) {
+      console.error("Invalid JSON format:", parseError);
+      res.status(500).json({ error: "Invalid JSON format" });
+    }
+  });
+});
+
+// load the developers from the json . 
+app.get("/api/developers", (req, res) => {
+  const devPath = path.join(__dirname, "developers.json");
+
+  fs.readFile(devPath, "utf8", (err, jsonData) => {
+    if (err) {
+      console.error("Error reading developers.json:", err);
+      return res.status(500).json({ error: "Failed to load developers" });
+    }
+
+    try {
+      const developers = JSON.parse(jsonData);
+      res.json(developers);
+    } catch (parseError) {
+      console.error("Invalid developers.json format:", parseError);
+      res.status(500).json({ error: "Invalid format in developers.json" });
+    }
+  });
+});
+
+//taking all the online user for the battle 
+app.get("/online-users", async (req, res) => {
+  try {
+    const users = await User.find({ online: true });
+    const simplified = users.map(u => ({ id: u._id, name: u.name }));
+    res.json(simplified);
+  } catch (err) {
+    console.error("Error fetching online users:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+app.get('/users/random-opponent/:id', async (req, res) => {
+  const myId = req.params.id;
+
+  try {
+    const candidates = await User.find({
+      _id: { $ne: new mongoose.Types.ObjectId(myId) },
+      online: true,
+      favorites: { $exists: true, $not: { $size: 0 } }
+    });
+
+    if (candidates.length === 0) {
+      return res.status(404).json({ error: "No opponents found" });
+    }
+
+    const randomOpponent = candidates[Math.floor(Math.random() * candidates.length)];
+
+    res.json({
+      id: randomOpponent._id,
+      name: randomOpponent.name,
+      favorites: randomOpponent.favorites || []
+    });
+  } catch (err) {
+    console.error("Random opponent error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// for 5 battle a day 
+app.get('/users/:userId/battles-today', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const count = user.battles.filter(b => new Date(b.date) >= startOfDay).length;
+    res.json({ count });
+  } catch (err) {
+    console.error('Error fetching today battles:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+
+
 
 // --- 🚀 Start server
 app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));

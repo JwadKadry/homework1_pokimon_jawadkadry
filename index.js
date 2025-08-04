@@ -231,6 +231,11 @@ function addToFavorites(pokemon) {
 
   const key = `favorites_${user.id}`;
   let favorites = JSON.parse(localStorage.getItem(key) || "[]");
+  //limit to 10 pokemon in favorite
+  if (favorites.length >= 10) {
+    alert("You can only have up to 10 favorite Pokémon.");
+    return;
+  }
 
   if (!favorites.find(p => p.id === pokemon.id)) {
     const simplified = cleanPokemonData(pokemon);
@@ -294,7 +299,25 @@ function goToDetails(pokemonId) {
 
 // Logout
 function logout() {
-  sessionStorage.removeItem("user");
-  sessionStorage.removeItem("token");
-  window.location.href = "homepage.html";
+  const token = sessionStorage.getItem("token");
+
+  fetch("http://localhost:3000/logout", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      console.log("✅ User logged out and set offline");
+    } else {
+      console.warn("⚠️ Logout failed on server");
+    }
+  })
+  .catch(err => console.error("❌ Logout error:", err))
+  .finally(() => {
+    sessionStorage.clear();
+    window.location.href = "login.html";
+  });
 }

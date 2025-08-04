@@ -3,9 +3,17 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  background: url('homepage.jpg') no-repeat bottom center fixed;
+  background: url('about_img.jpg') no-repeat bottom center fixed;
   background-size: cover;
   color: #333;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.6); /* or rgba(0,0,0,0.3) for dark tint */
+  z-index: -1;
 }
 
   
@@ -102,3 +110,22 @@ body {
 .nav-btn:hover {
   background-color: #0056b3;
 }
+
+.project-overview {
+  background-color: #f0f8ff;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 2rem 0;
+  direction: ltr; /* Make English read left-to-right */
+  text-align: left;
+}
+.project-overview h2,
+.project-overview h3 {
+  text-align: left;
+}
+
+.intro {
+  direction: ltr;
+  text-align: left;
+}
+

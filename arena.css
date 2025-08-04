@@ -44,3 +44,11 @@ button {
 button:hover {
   background-color: #1565c0;
 }
+
+
+.battle-status {
+  font-size: 1.2em;
+  margin-bottom: 15px;
+  color: #333;
+  text-align: center;
+}

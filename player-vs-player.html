@@ -14,10 +14,19 @@
 <body>
   <div class="arena-container">
     <h2>Player vs Player Battle 🎮</h2>
+    <select id="opponentSelect" class="form-select w-50 m-auto">
+      <option value="">-- Choose an Opponent --</option>
+    </select>
     
-    <button id="findPlayerBtn" class="btn btn-primary my-3">Find Opponent & Start Battle</button>
-
+    <button id="startBattleBtn" class="btn btn-primary my-3">Start Battle</button>
+    
     <div id="battleArena"></div>
+    <!-- Countdown Section -->
+    <div id="countdownContainer" style="display: none; flex-direction: column; align-items: center;">
+      <img id="countdownGif" src="countdown.gif" style="display: none; width: 150px;">
+      <h2 id="countdown" style="font-size: 3em; margin-top: 10px;"></h2>
+    </div>
+
     <div id="battleResult"></div>
     <button onclick="window.location.href='arena.html'" class="back-btn">⬅️ Back to Arena</button>
   </div>

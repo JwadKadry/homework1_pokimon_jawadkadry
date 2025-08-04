@@ -1,0 +1,26 @@
+{
+    "intro": {
+      "title": "Welcome!",
+      "paragraph": "This Pokémon search project allows you to find a Pokémon by name, number, type, or ability. The data is loaded from a JSON file on the server and displayed dynamically on the homepage."
+    },
+    "overview": {
+      "title": "Project Overview",
+      "description": "PokéArena is a full-stack web application that allows users to search for Pokémon, view their stats, mark favorites, and battle against other players or a bot. The platform integrates the Pokémon API and offers interactive features with secure user management and data storage.",
+      "features": [
+        "Registration & login with secure session management",
+        "Search and view detailed Pokémon stats",
+        "Favorites management (save/remove/download)",
+        "Battle system: vs Bot and vs other Players",
+        "Score calculation and leaderboard",
+        "Achievements and personal statistics",
+        "Embedded YouTube videos for each Pokémon"
+      ],
+      "technologies": [
+        "Frontend: HTML, CSS, JS, Bootstrap",
+        "Backend: Node.js, Express.js",
+        "Database: MongoDB",
+        "External: PokéAPI, bcrypt, csv-writer, axios"
+      ]
+    }
+}
+  

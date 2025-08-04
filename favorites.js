@@ -72,10 +72,8 @@ function displayFavorites(favorites) {
     card.innerHTML = `
       <h3>${poke.name || "Unnamed"} (#${poke.id || "?"})</h3>
       <img src="${imageUrl}" alt="${poke.name}" />
-      <p><strong>Type(s):</strong> ${types}</p>
       <p><strong>Abilities:</strong> ${abilities}</p>
       <div class="stats-container" id="stats-${poke.id}" style="display:none;"></div>
-      <button onclick="loadStats(${poke.id})">📊 Stats</button>
       <button class="remove-btn" onclick="removeFromFavorites(${poke.id})">Remove</button>
       <button class="json-btn" onclick='downloadSingleJSON(${JSON.stringify(poke)})'>JSON 📄</button>
       <button class="csv-btn" onclick='downloadSingleCSV(${JSON.stringify(poke)})'>CSV 📊</button>
@@ -86,38 +84,6 @@ function displayFavorites(favorites) {
   });
 }
 
-// Load Pokémon stats
-function loadStats(pokemonId) {
-  const statsContainer = document.getElementById(`stats-${pokemonId}`);
-  if (!statsContainer) return;
-
-  if (statsContainer.style.display === "block") {
-    statsContainer.style.display = "none";
-    statsContainer.innerHTML = "";
-    return;
-  }
-
-  fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
-    .then(res => res.json())
-    .then(data => {
-      if (!data.stats) return;
-
-      const statsList = data.stats.map(stat => {
-        return `<li><strong>${stat.stat.name}:</strong> ${stat.base_stat}</li>`;
-      }).join("");
-
-      statsContainer.innerHTML = `
-        <p><strong>Stats:</strong></p>
-        <ul>${statsList}</ul>
-      `;
-      statsContainer.style.display = "block";
-    })
-    .catch(err => {
-      console.error("Failed to load stats:", err);
-      statsContainer.innerHTML = "<p style='color:red;'>Failed to load stats.</p>";
-      statsContainer.style.display = "block";
-    });
-}
 
 // Remove a Pokémon from favorites
 function removeFromFavorites(pokemonId) {
@@ -171,11 +137,11 @@ function downloadSingleCSV(poke) {
   const data = [
     ["ID", poke.id],
     ["Name", poke.name],
-    ["Types", (poke.types || []).map(t => t.type?.name).join(", ")],
-    ["Abilities", (poke.abilities || []).map(a => a.ability?.name).join(", ")],
-    ["Height", poke.height],
-    ["Weight", poke.weight],
-    ["Base XP", poke.base_experience]
+    ["Types", (poke.types || []).map(t => t?.type?.name || "Unknown").join(", ")],
+    ["Abilities", (poke.abilities || []).map(a => a?.ability?.name || "Unknown").join(", ")],
+    ["Height", poke.height ?? "Unknown"],
+    ["Weight", poke.weight ?? "Unknown"],
+    ["Base XP", poke.base_experience ?? "Unknown"]
   ];
 
   const csvContent = data.map(row => row.join(",")).join("\n");

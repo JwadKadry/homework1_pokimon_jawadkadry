@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const user = JSON.parse(sessionStorage.getItem("user"));
   if (!user || !user.id) {
     alert("You must be logged in to play.");
@@ -6,92 +6,136 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  document.getElementById("findPlayerBtn")
+  await loadOnlineUsers(user.id);
+  document.getElementById("startBattleBtn")
           .addEventListener("click", () => startBattle(user));
 });
 
-async function startBattle(user) {
+async function loadOnlineUsers(currentUserId) {
+  const select = document.getElementById("opponentSelect");
   try {
-    // 1) YOUR favorites, from the server
-    const meRes = await fetch(`http://localhost:3000/users/${user.id}/favorites`);
-    if (!meRes.ok) {
-      const err = await meRes.json();
-      throw new Error(err.message || "This user has no favorites.");
-    }
-    const myFavorites = await meRes.json();
+    const res = await fetch("http://localhost:3000/online-users");
+    const users = await res.json();
 
-    // 2) OPPONENT + their favorites, from the server
-    const oppRes = await fetch(`http://localhost:3000/users/random-opponent/${user.id}`);
-    if (!oppRes.ok) {
-      const err = await oppRes.json();
-      throw new Error(err.error || "No available opponent at the moment.");
-    }
-    const { id: oppId, name: oppName, favorites: oppFavorites } = await oppRes.json();
-
-    // 3) Pick one Pokémon at random from each array
-    const myPoke  = pickRandom(myFavorites);
-    const oppPoke = pickRandom(oppFavorites);
-
-    // 4) Error if either side has no favorites
-    if (!myPoke || !oppPoke) {
-      throw new Error("One of the players has no favorite Pokémon.");
-    }
-
-    // 5) Show the battle
-    displayBattle(user.name, myPoke, oppName, oppPoke);
-
+    users.filter(u => u.id !== currentUserId).forEach(u => {
+      const option = document.createElement("option");
+      option.value = u.id;
+      option.textContent = u.name;
+      select.appendChild(option);
+    });
   } catch (err) {
-    console.error("❌ Error during player battle:", err);
-    alert(err.message || "Unknown error");
+    console.error("❌ Failed to fetch online users:", err);
   }
 }
 
-// Helper for random pick
+async function checkDailyLimit(userId) {
+  try {
+    const res = await fetch(`/users/${userId}/battles-today`);
+    const data = await res.json();
+    if (data.count >= 5) {
+      alert("❌ You've reached the daily limit of 5 battles.");
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("❌ Failed to check daily battle limit:", err);
+    return false;
+  }
+}
+
+
+async function startBattle(user) {
+  const allowed = await checkDailyLimit(user.id);
+  if (!allowed) return;
+  const opponentId = document.getElementById("opponentSelect").value;
+  if (!opponentId) return alert("Please select an opponent.");
+
+  const btn = document.getElementById("startBattleBtn");
+  const cd = document.getElementById("countdown");
+  const gif = document.getElementById("countdownGif");
+  const container = document.getElementById("countdownContainer");
+
+  btn.disabled = true;
+  container.style.display = "flex";
+  gif.style.display = "block";
+  cd.textContent = "";
+
+  for (let i = 3; i >= 1; i--) {
+    cd.textContent = i;
+    await new Promise(r => setTimeout(r, 1000));
+  }
+
+  gif.style.display = "none";
+  container.style.display = "none";
+
+  try {
+    const [myRes, oppRes] = await Promise.all([
+      fetch(`http://localhost:3000/users/${user.id}/favorites`),
+      fetch(`http://localhost:3000/users/${opponentId}/favorites`)
+    ]);
+
+    const [myFavorites, oppFavorites] = await Promise.all([
+      myRes.json(),
+      oppRes.json()
+    ]);
+
+    if (!myFavorites.length || !oppFavorites.length) {
+      throw new Error("Both players must have at least one favorite Pokémon.");
+    }
+
+    const myPoke = pickRandom(myFavorites);
+    const oppPoke = pickRandom(oppFavorites);
+
+    displayBattle(user.name, myPoke, document.getElementById("opponentSelect").selectedOptions[0].textContent, oppPoke, user.id, opponentId);
+
+  } catch (err) {
+    console.error("❌ Battle failed:", err);
+    alert(err.message || "Unknown error");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+
 function pickRandom(arr) {
-  return Array.isArray(arr) && arr.length
-    ? arr[Math.floor(Math.random() * arr.length)]
-    : null;
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function calculateScore(pokemon) {
-  if (!pokemon.stats || !Array.isArray(pokemon.stats)) return 0;
-  return pokemon.stats.reduce((sum, stat) => sum + stat.base_stat, 0);
+  const weights = { hp: 0.3, attack: 0.4, defense: 0.2, speed: 0.1 };
+  return pokemon.stats?.reduce((sum, s) => {
+    const name = s.stat.name.toLowerCase();
+    return sum + (weights[name] || 0) * s.base_stat;
+  }, 0) ?? 0;
 }
 
-function displayBattle(player1, poke1, player2, poke2) {
-  const container = document.getElementById("battleArena");
+function displayBattle(player1, poke1, player2, poke2, user1Id, user2Id) {
+  const arena = document.getElementById("battleArena");
   const resultDiv = document.getElementById("battleResult");
-  container.innerHTML = "";
+  arena.innerHTML = "";
   resultDiv.innerHTML = "";
 
   const score1 = calculateScore(poke1);
   const score2 = calculateScore(poke2);
 
-  const card1 = generatePokemonCard(player1, poke1, score1);
-  const card2 = generatePokemonCard(player2, poke2, score2);
-  container.append(card1, card2);
+  arena.append(generatePokemonCard(player1, poke1, score1));
+  arena.append(generatePokemonCard(player2, poke2, score2));
 
-  let result1, result2;
+  let result1 = "draw", result2 = "draw", resultText = "🔁 Draw!";
   if (score1 > score2) {
-    resultDiv.textContent = `🏆 ${player1} wins!`;
     result1 = "win";
     result2 = "loss";
+    resultText = `🏆 ${player1} wins!`;
   } else if (score2 > score1) {
-    resultDiv.textContent = `🏆 ${player2} wins!`;
     result1 = "loss";
     result2 = "win";
-  } else {
-    resultDiv.textContent = "🔁 Draw!";
-    result1 = result2 = "draw";
+    resultText = `🏆 ${player2} wins!`;
   }
 
-  // 🟢 Send battle results to server
-  const user = JSON.parse(sessionStorage.getItem("user"));
-  recordBattleResult(user.id, result1, poke1.name, "player");
+  resultDiv.textContent = resultText;
 
-  fetch(`http://localhost:3000/users/random-opponent/${user.id}`)
-    .then(res => res.json())
-    .then(opp => recordBattleResult(opp.id, result2, oppPoke.name, "player"));
+  recordBattleResult(user1Id, result1, poke1.name, "player");
+  recordBattleResult(user2Id, result2, poke2.name, "player");
 }
 
 function generatePokemonCard(playerName, pokemon, score) {
@@ -103,7 +147,7 @@ function generatePokemonCard(playerName, pokemon, score) {
                'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'}"
          alt="${pokemon.name}">
     <p><strong>${pokemon.name}</strong></p>
-    <p>Total Score: ${score}</p>
+    <p>Total Score: ${score.toFixed(2)}</p>
   `;
   return div;
 }
@@ -115,6 +159,6 @@ function recordBattleResult(userId, result, pokemonName, mode) {
     body: JSON.stringify({ result, pokemonName, mode })
   })
   .then(res => res.json())
-  .then(data => console.log("✅ Battle result saved:", data))
-  .catch(err => console.error("❌ Failed to save battle:", err));
+  .then(data => console.log("✅ Battle result recorded:", data))
+  .catch(err => console.error("❌ Failed to record battle:", err));
 }

@@ -25,9 +25,4 @@ A full-stack Pokémon-themed web application that allows users to search for Pok
 - **Auth:** JWT (JSON Web Tokens)
 - **API:** PokéAPI (https://pokeapi.co/)
 
-## 📦 Installation
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/yourusername/pokemon-web-app.git
-   cd pokemon-web-app

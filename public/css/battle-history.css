@@ -1,0 +1,105 @@
+body {
+  direction: rtl;
+  font-family: Arial, sans-serif;
+  padding: 30px;
+  margin: 0;
+  background: url('../images/arena_img.png') no-repeat bottom center fixed;
+  background-size: cover;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.6); /* white overlay */
+  z-index: -1;
+}
+
+h1 {
+  margin-bottom: 30px;
+  font-size: 2.5em;
+  color: #222;
+  text-shadow: 1px 1px 1px #fff;
+}
+
+table {
+  width: 95%;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+thead th {
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  font-size: 1em;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+tbody tr:hover {
+  background-color: #f1f1f1;
+  transition: background-color 0.2s ease;
+}
+
+/* Colored status cells */
+.win {
+  color: #2e7d32; /* darker green */
+  font-weight: bold;
+}
+
+.draw {
+  color: #ef6c00; /* deep orange */
+  font-weight: bold;
+}
+
+.loss {
+  color: #c62828; /* deep red */
+  font-weight: bold;
+}
+
+/* Optional: center align all table cells */
+td, th {
+  text-align: center;
+}
+
+/* Responsive: make table scrollable on mobile */
+@media (max-width: 768px) {
+  table {
+    width: 100%;
+    font-size: 0.9em;
+  }
+}
+
+.back-btn {
+  margin-top: 30px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: #ffffff;
+  border: 2px solid #4CAF50;
+  color: #4CAF50;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background-color: #4CAF50;
+  color: white;
+}

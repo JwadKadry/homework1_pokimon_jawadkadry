@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Homepage - Pokémon Search Project</title>
+  <link rel="stylesheet" href="public/css/homepage.css">
+</head>
+<body>
+
+  <!-- TOP NAV BAR -->
+  <header class="top-nav">
+    <nav>
+      <ul class="nav-links">
+        <li><a href="about">About</a></li>
+        <li><a href="register">Sign Up</a></li>
+        <li><a href="login">Login</a></li>
+        <li><a href="homepage" class="active">Home</a></li>
+      </ul>
+      <span class="brand">Pokemon</span>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- INTRODUCTION SECTION -->
+    <section id="intro" class="intro" style="direction: ltr; text-align: left;"></section>
+
+    <!-- PROJECT OVERVIEW SECTION -->
+    <section id="overview" class="project-overview" style="direction: ltr; text-align: left;"></section>
+
+    <!-- DEVELOPERS LIST -->
+    <section class="developers" style="direction: ltr; text-align: left;">
+      <h2>Developers:</h2>
+      <ul id="devList">
+        <!-- Will be loaded from JS -->
+      </ul>
+    </section>
+
+    <!-- Arena Button (Visible only if logged in) -->
+    <section class="arena-section">
+      <button id="arenaButton" class="hidden" onclick="location.href='arena'">🎮 Battle Arena</button>
+    </section>
+
+  </main>
+
+  <script src="public/js/homepage.js"></script>
+</body>
+</html>

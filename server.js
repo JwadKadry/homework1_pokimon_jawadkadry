@@ -42,7 +42,7 @@ function simplifyPokemonData(pokemon) {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname, { index: 'homepage.html' }));
+app.use(express.static(__dirname, { index: 'homepage' }));
 
 // --- Connect to MongoDB
 mongoose.connect('mongodb+srv://bsharyamin:Basharyamin1@pokmondb.z0c4hkx.mongodb.net/registerDB?retryWrites=true&w=majority&appName=PokmonDB')
@@ -355,15 +355,14 @@ app.get('/arena/leaderboard', async (req, res) => {
   try {
     const users = await User.find();
 
-    // Prepare leaderboard data
     const leaderboard = users
       .map(user => {
-        const wins = user.battleWins || 0;
-        const draws = user.battleDraws || 0;
-        const losses = user.battleLosses || 0;
-        const battles = wins + draws + losses;
-        const points = wins * 3 + draws * 1;
-        const successRate = battles > 0 ? ((wins / battles) * 100).toFixed(2) : '0.00';
+        const wins = user.battles?.filter(b => b.result === 'win').length || 0;
+        const draws = user.battles?.filter(b => b.result === 'draw').length || 0;
+        const losses = user.battles?.filter(b => b.result === 'loss').length || 0;
+        const battles = user.battles?.length || 0;
+        const points = wins * 3 + draws;
+        const successRate = battles > 0 ? ((wins + 0.5 * draws) / battles * 100).toFixed(2) : '0.00';
 
         return {
           name: user.name,
@@ -375,10 +374,9 @@ app.get('/arena/leaderboard', async (req, res) => {
           successRate
         };
       })
-      .filter(player => player.battles >= 5) // Only include users with 5+ battles
-      .sort((a, b) => b.points - a.points);  // Sort by total points
+      .filter(player => player.battles >= 5)
+      .sort((a, b) => b.points - a.points);
 
-    // Assign ranks
     leaderboard.forEach((player, index) => {
       player.rank = index + 1;
     });
@@ -449,7 +447,7 @@ app.get('/users/:id/battles', async (req, res) => {
 
 //load the data fron a json
 app.get('/api/homepage', (req, res) => {
-  const dataPath = path.join(__dirname, 'homepageData.json');
+  const dataPath = path.join(__dirname, 'public/data/homepageData.json');
 
   fs.readFile(dataPath, 'utf8', (err, jsonData) => {
     if (err) {
@@ -469,7 +467,7 @@ app.get('/api/homepage', (req, res) => {
 
 // load the developers from the json . 
 app.get("/api/developers", (req, res) => {
-  const devPath = path.join(__dirname, "developers.json");
+  const devPath = path.join(__dirname, "public/data/developers.json");
 
   fs.readFile(devPath, "utf8", (err, jsonData) => {
     if (err) {
@@ -487,7 +485,7 @@ app.get("/api/developers", (req, res) => {
   });
 });
 
-//taking all the online user for the battle 
+// get all the online user for the battle 
 app.get("/online-users", async (req, res) => {
   try {
     const users = await User.find({ online: true });
@@ -544,7 +542,23 @@ app.get('/users/:userId/battles-today', async (req, res) => {
   }
 });
 
+// to remove the html from the url 
+app.get('/homepage', (req, res) => res.sendFile(path.join(__dirname, 'public/html/homepage.html')));
+app.get('/favorite', (req, res) => res.sendFile(path.join(__dirname, 'public/html/favorite.html')));
+app.get('/arena', (req, res) => res.sendFile(path.join(__dirname, 'public/html/arena.html')));
+app.get('/arena-vs-bot', (req, res) => res.sendFile(path.join(__dirname, 'public/html/arena-vs-bot.html')));
+app.get('/battle-history', (req, res) => res.sendFile(path.join(__dirname, 'public/html/battle-history.html')));
+app.get('/leaderboard', (req, res) => res.sendFile(path.join(__dirname, 'public/html/leaderboard.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/html/Login.html')));
+app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'public/html/register.html')));
+app.get('/player-vs-player', (req, res) => res.sendFile(path.join(__dirname, 'public/html/player-vs-player.html')));
+app.get('/poke_details', (req, res) => res.sendFile(path.join(__dirname, 'public/html/poke_details.html')));
+app.get('/about', (req, res) => res.sendFile(path.join(__dirname, 'public/html/about.html')));
+app.get('/index', (req, res) => res.sendFile(path.join(__dirname, 'public/html/index.html')));
 
+app.get('/', (req, res) => {
+  res.redirect('/homepage');
+});
 
 
 

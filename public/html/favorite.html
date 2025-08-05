@@ -1,0 +1,27 @@
+<!-- FAVORITE.HTML -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Favorites</title>
+  <link rel="stylesheet" href="public/css/favorites.css">
+</head>
+<body>
+  <h1>My Favorite Pokémon</h1>
+
+  <div class="controls">
+    <button onclick="goBack()">⬅ Back to Search</button>
+
+    <label for="sortSelect">Sort by:</label>
+    <select id="sortSelect" onchange="loadFavorites()">
+      <option value="name">Name</option>
+      <option value="id">ID</option>
+    </select>
+  </div>
+
+  <div id="favoritesList"></div>
+
+  <script src="public/js/favorites.js"></script>
+</body>
+</html>

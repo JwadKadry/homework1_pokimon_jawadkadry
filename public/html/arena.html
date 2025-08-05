@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Battle Arena </title>
+  <link rel="stylesheet" href="public/css/arena.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Battle Arena</h1>
+    <p id="battleStatus" class="battle-status">Loading battle status...</p>
+  
+    <button onclick="location.href='arena-vs-bot'">
+      Battle vs Bot 🎮
+    </button>
+  
+    <button onclick="location.href='player-vs-player'">
+      Random Battle vs Another Player 🤝
+    </button>
+  
+    <button onclick="viewBattleHistory()">View Battle History 📜</button>
+    <button onclick="showRanking()">Player Leaderboard 🏆</button>
+    <button class="menu-btn" onclick="goBack()">⬅️ Back</button>
+  </div>  
+
+  <script src="public/js/arena.js"></script>
+</body>
+</html>

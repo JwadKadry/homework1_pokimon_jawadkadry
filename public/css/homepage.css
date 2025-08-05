@@ -1,0 +1,131 @@
+/* ===== Body & Background ===== */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: url('../images/about_img.jpg') no-repeat bottom center fixed;
+  background-size: cover;
+  color: #333;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.6); /* or rgba(0,0,0,0.3) for dark tint */
+  z-index: -1;
+}
+
+  
+  /* ===== Top Navigation ===== */
+  .top-nav {
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .top-nav nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 24px;
+  }
+  .nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .nav-links a:hover {
+    background: #f0f0f0;
+  }
+  .nav-links a.active {
+    background: #e74c3c;
+    color: #fff;
+  }
+  .brand {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #e74c3c;
+  }
+  
+  /* ===== Main Container ===== */
+  .container {
+    max-width: 800px;
+    margin: 32px auto;
+    padding: 24px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 8px;
+  }
+  
+  /* ===== Introduction ===== */
+  .intro h2 {
+    margin-bottom: 8px;
+  }
+  .intro p {
+    margin-bottom: 24px;
+  }
+  
+  /* ===== Developers List ===== */
+  .developers h2 {
+    margin-bottom: 12px;
+  }
+  .developers ul {
+    list-style: none;
+    padding: 0;
+  }
+  .developers li {
+    background: #fff;
+    margin-bottom: 8px;
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  
+  .hidden {
+  display: none;
+}
+
+.nav-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin: 0 4px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.nav-btn:hover {
+  background-color: #0056b3;
+}
+
+.project-overview {
+  background-color: #f0f8ff;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 2rem 0;
+  direction: ltr; /* Make English read left-to-right */
+  text-align: left;
+}
+.project-overview h2,
+.project-overview h3 {
+  text-align: left;
+}
+
+.intro {
+  direction: ltr;
+  text-align: left;
+}
+
